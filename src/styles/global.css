@@ -1,0 +1,166 @@
+@import "tailwindcss";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+@import "@fontsource-variable/noto-sans-sc";
+@import "@fontsource-variable/noto-serif-sc";
+@import "@fontsource/lxgw-wenkai";
+
+@theme {
+	/* Refero / Vercel color tokens */
+	--color-paper-white: #fafafa;
+	--color-pure-white: #ffffff;
+	--color-hairline: #ebebeb;
+	--color-ash: #c9c9c9;
+	--color-smoke: #a8a8a8;
+	--color-graphite: #8f8f8f;
+	--color-slate: #7d7d7d;
+	--color-stone: #666666;
+	--color-charcoal: #4d4d4d;
+	--color-obsidian: #171717;
+	--color-carbon: #000000;
+	--color-terminal-green: #297a3a;
+
+	/* Typography tokens
+	   黑体正文：Geist（西文）+ 思源黑体（中文）
+	   宋体标题：思源宋体
+	   金句：霞鹜文楷 */
+	--font-geist-sans: "Geist Variable", "Inter", "Noto Sans SC Variable",
+		"PingFang SC", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+	--font-geist-mono: "Geist Mono Variable", "Geist Mono", "SFMono-Regular",
+		Consolas, "Liberation Mono", monospace;
+	--font-source-han-serif: "Noto Serif SC Variable", "Source Han Serif SC",
+		"Noto Serif SC", "Songti SC", serif;
+	--font-wenkai: "LXGW WenKai", "Kaiti SC", "STKaiti", "KaiTi", serif;
+	--text-eyebrow: 11px;
+	--text-caption: 13px;
+	--text-body: 16px;
+	--text-heading: 30px;
+	--text-heading-lg: 56px;
+	--text-display: 64px;
+
+	/* Shape and elevation tokens */
+	--radius-nav: 2px;
+	--radius-card: 6px;
+	--radius-button: 6px;
+	--radius-pill: 9999px;
+	--shadow-subtle: 0 0 0 1px rgb(0 0 0 / 8%), 0 0 0 2px #fafafa;
+	--shadow-hairline: 0 0 0 1px #ebebeb;
+
+	/* Spacing scale (Refero, 4px grid) */
+	--spacing-4: 4px;
+	--spacing-6: 6px;
+	--spacing-8: 8px;
+	--spacing-12: 12px;
+	--spacing-14: 14px;
+	--spacing-16: 16px;
+	--spacing-20: 20px;
+	--spacing-24: 24px;
+	--spacing-32: 32px;
+	--spacing-40: 40px;
+	--spacing-44: 44px;
+
+	/* Layout tokens */
+	--spacing-section: 112px;
+	--spacing-card: 16px;
+	--spacing-element: 12px;
+	--spacing-page: 48px;
+	--container-page: 1280px;
+}
+
+:root {
+	--leading-eyebrow: 1.5;
+	--leading-caption: 1.54;
+	--leading-body: 1.5;
+	--leading-heading: 1.1;
+	--leading-display: 1;
+	--tracking-label: 0.071em;
+	--tracking-heading: -1.5px;
+	--tracking-heading-lg: -3.36px;
+	--tracking-display: -3.84px;
+	--font-weight-regular: 400;
+	--font-weight-display: 450;
+	--font-weight-medium: 500;
+	--button-height: 44px;
+	--page-gutter: clamp(24px, 4vw, var(--spacing-page));
+	--card-padding: clamp(var(--spacing-card), 2vw, 24px);
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	margin: 0;
+	color: var(--color-obsidian);
+	background: var(--color-paper-white);
+	font-family: var(--font-geist-sans);
+	font-size: var(--text-body);
+	font-weight: var(--font-weight-regular);
+	line-height: 1.75;
+	text-rendering: optimizeLegibility;
+}
+
+a {
+	color: inherit;
+}
+
+button,
+a {
+	-webkit-tap-highlight-color: transparent;
+}
+
+button {
+	font: inherit;
+}
+
+::selection {
+	color: var(--color-pure-white);
+	background: var(--color-obsidian);
+}
+
+:focus-visible {
+	outline: 2px solid var(--color-obsidian);
+	outline-offset: 3px;
+}
+
+/* Shared layout shell and mono label, used across pages */
+.page-shell {
+	width: min(calc(100% - (var(--page-gutter) * 2)), var(--container-page));
+	margin-inline: auto;
+}
+
+.eyebrow {
+	margin: 0 0 var(--spacing-12);
+	font-family: var(--font-geist-mono);
+	font-size: var(--text-eyebrow);
+	font-weight: var(--font-weight-regular);
+	line-height: var(--leading-eyebrow);
+	letter-spacing: var(--tracking-label);
+	text-transform: uppercase;
+}
+
+/* Language visibility — set html[data-lang] before paint */
+html[data-lang="zh"] .i18n-en,
+html:not([data-lang]) .i18n-en {
+	display: none !important;
+}
+
+html[data-lang="en"] .i18n-zh {
+	display: none !important;
+}
+
+/* 栏目/展示级标题：思源宋体 Bold；正文级小标题在组件内改用思源黑体 Medium */
+h1,
+h2 {
+	font-family: var(--font-source-han-serif);
+	font-weight: 700;
+}
+
+h3 {
+	font-family: var(--font-geist-sans);
+	font-weight: 500;
+}

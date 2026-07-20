@@ -1,0 +1,229 @@
+---
+import { withBase } from "../lib/base";
+
+interface Props {
+	title: string;
+	date: string;
+	lead?: string;
+	bodyHtml: string;
+}
+
+const { title, date, lead = "", bodyHtml } = Astro.props;
+const dateLabel = date.replaceAll("-", ".");
+const blogHref = withBase("/blog/");
+---
+
+<article class="article">
+	<header class="article-hero">
+		<a class="back-link" href={blogHref}>← Blog</a>
+		<p class="eyebrow">ARTICLE · {dateLabel}</p>
+		<h1>{title}</h1>
+		{
+			lead ? (
+				<blockquote>
+					<p>{lead}</p>
+				</blockquote>
+			) : null
+		}
+	</header>
+
+	<div class="article-body" set:html={bodyHtml} />
+
+	<footer class="article-footer">
+		<a class="back-cta" href={blogHref}>← 返回 Blog</a>
+	</footer>
+</article>
+
+<style>
+	.article {
+		width: min(100%, 880px);
+		margin-inline: auto;
+		padding-inline: var(--page-gutter);
+		padding-bottom: var(--spacing-section);
+	}
+
+	.article-hero {
+		padding-block: 72px 48px;
+	}
+
+	.back-link {
+		display: inline-block;
+		margin-bottom: var(--spacing-32);
+		color: var(--color-stone);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-caption);
+		letter-spacing: var(--tracking-label);
+		text-decoration: none;
+		text-transform: uppercase;
+	}
+
+	h1,
+	:global(.article-body h2),
+	:global(.article-body h3),
+	:global(.article-body p),
+	:global(.article-body ul),
+	:global(.article-body ol) {
+		margin-top: 0;
+	}
+
+	h1 {
+		margin-bottom: var(--spacing-32);
+		font-family: var(--font-source-han-serif);
+		font-size: clamp(36px, 5vw, 56px);
+		font-weight: 600;
+		line-height: 1.25;
+		letter-spacing: 0.01em;
+	}
+
+	blockquote {
+		margin: 0;
+		padding: 0;
+		border: 0;
+	}
+
+	blockquote p {
+		margin: 0;
+		color: var(--color-charcoal);
+		font-family: var(--font-wenkai);
+		font-size: clamp(18px, 2vw, 22px);
+		line-height: 1.7;
+	}
+
+	.article-body {
+		color: var(--color-charcoal);
+		font-size: 17px;
+		line-height: 1.9;
+	}
+
+	:global(.article-body > p),
+	:global(.article-body > ul),
+	:global(.article-body > ol),
+	:global(.article-body > blockquote),
+	:global(.article-body .media-col > p) {
+		margin-bottom: var(--spacing-24);
+	}
+
+	:global(.article-body h2) {
+		margin: var(--spacing-44) 0 var(--spacing-24);
+		font-family: var(--font-source-han-serif);
+		font-size: clamp(26px, 3vw, 32px);
+		font-weight: 600;
+		line-height: 1.35;
+		letter-spacing: 0.02em;
+		color: var(--color-obsidian);
+	}
+
+	:global(.article-body h3) {
+		margin: var(--spacing-32) 0 var(--spacing-16);
+		font-family: var(--font-source-han-serif);
+		font-size: clamp(20px, 2.4vw, 24px);
+		font-weight: 600;
+		line-height: 1.4;
+		color: var(--color-obsidian);
+	}
+
+	:global(.article-body blockquote) {
+		margin: 0 0 var(--spacing-24);
+		padding-left: var(--spacing-16);
+		border-left: 2px solid var(--color-ash);
+		color: var(--color-charcoal);
+		font-family: var(--font-wenkai);
+	}
+
+	:global(.article-body ul),
+	:global(.article-body ol) {
+		padding-left: 1.25em;
+	}
+
+	:global(.article-body li) {
+		margin-bottom: var(--spacing-12);
+	}
+
+	:global(.article-body li::marker) {
+		color: var(--color-ash);
+	}
+
+	:global(.article-body .media-row) {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-16);
+		margin-block: var(--spacing-32);
+	}
+
+	:global(.article-body .media-col) {
+		min-width: 0;
+	}
+
+	:global(.article-body .media) {
+		margin: 0 0 var(--spacing-16);
+	}
+
+	:global(.article-body .media img) {
+		display: block;
+		width: 100%;
+		height: auto;
+		border-radius: var(--radius-card);
+		background: var(--color-pure-white);
+		box-shadow: var(--shadow-hairline);
+	}
+
+	:global(.article-body figcaption) {
+		margin-top: var(--spacing-8);
+		color: var(--color-stone);
+		font-size: var(--text-caption);
+		line-height: 1.5;
+		text-align: center;
+	}
+
+	.article-footer {
+		margin-top: var(--spacing-44);
+		padding-top: var(--spacing-32);
+		border-top: 1px solid var(--color-hairline);
+	}
+
+	.back-cta {
+		display: inline-flex;
+		align-items: center;
+		height: var(--button-height);
+		padding-inline: var(--spacing-20);
+		border-radius: var(--radius-button);
+		color: var(--color-pure-white);
+		background: var(--color-obsidian);
+		font-size: 14px;
+		text-decoration: none;
+	}
+
+	@media (hover: hover) {
+		.back-link,
+		.back-cta {
+			transition:
+				color 160ms ease,
+				opacity 160ms ease,
+				transform 160ms ease;
+		}
+
+		.back-link:hover {
+			color: var(--color-obsidian);
+		}
+
+		.back-cta:hover {
+			transform: translateY(-1px);
+			opacity: 0.88;
+		}
+	}
+
+	@media (max-width: 720px) {
+		.article-hero {
+			padding-block: 48px 32px;
+		}
+
+		:global(.article-body .media-row) {
+			flex-direction: column;
+		}
+
+		:global(.article-body .media-col) {
+			max-width: 100% !important;
+			flex: 1 1 auto !important;
+		}
+	}
+</style>

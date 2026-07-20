@@ -1,0 +1,592 @@
+---
+import Base from "../layouts/Base.astro";
+import { withBase } from "../lib/base";
+
+// 数据来源：飞书多维表格「越野跑记录」，照片已下载到 public/trail-run/
+const races = [
+	{
+		name: "Xterra 夜跑（苏州渔洋山站）",
+		date: "2026-06-06",
+		distance: "21K",
+		elevation: "累计爬升 414M",
+		result: "02:33:46",
+		photo: null,
+	},
+	{
+		name: "Outopia 好野姐妹莫干山",
+		date: "2026-05-24",
+		distance: "18.3K",
+		elevation: "累计爬升 1252M",
+		result: "03:35:50",
+		photo: {
+			src: withBase("/trail-run/outopia-moganshan/01.jpg"),
+			alt: "完赛照：Outopia 好野姐妹莫干山",
+		},
+	},
+	{
+		name: "抱佛脚",
+		date: "2026-04-12",
+		distance: "20K",
+		elevation: "累计爬升 800+",
+		result: "03:08:13",
+		photo: {
+			src: withBase("/trail-run/baofojiao/01.jpg"),
+			alt: "完赛照：抱佛脚越野赛",
+		},
+	},
+	{
+		name: "2026黄山徽州古城环新安江百公里越野赛",
+		date: "2026-10-31",
+		distance: "41.2K",
+		elevation: "累计爬升 1700M",
+		result: null,
+		photo: {
+			src: withBase("/trail-run/huangshan-100k/01.png"),
+			alt: "赛事海报：2026黄山徽州古城环新安江百公里越野赛",
+		},
+	},
+	{
+		name: "杭州斯巴达勇士赛",
+		date: "2026-11-07",
+		distance: null,
+		elevation: null,
+		result: null,
+		photo: null,
+	},
+];
+
+const today = new Date().toISOString().slice(0, 10);
+const entries = races
+	.map((race) => ({
+		...race,
+		dateLabel: race.date.replaceAll("-", "."),
+		upcoming: race.date > today,
+	}))
+	.sort((a, b) => b.date.localeCompare(a.date));
+
+const goals = [
+	"ITRA 500 分",
+	"跑一个 40K 的越野赛",
+	"去走尼泊尔 EBC",
+	"爬一个 6K+ 的雪山",
+];
+---
+
+<Base
+	title="Chen Wang｜Trail run"
+	description="越野跑足迹：比赛名称、距离、成绩与照片。"
+	active="trail-run"
+>
+	<main class="page-shell">
+		<section class="hero" aria-labelledby="page-title">
+			<div class="hero-backdrop" aria-hidden="true">
+				<span class="hero-contour hero-contour--a"></span>
+				<span class="hero-contour hero-contour--b"></span>
+				<span class="hero-contour hero-contour--c"></span>
+				<span class="hero-tick hero-tick--left"></span>
+				<span class="hero-tick hero-tick--right"></span>
+				<span class="hero-label hero-label--elev">+414M</span>
+				<span class="hero-label hero-label--dist">21K</span>
+			</div>
+
+			<p class="eyebrow">TRAIL RUN</p>
+			<h1 id="page-title" class="hero-title">越野足迹</h1>
+			<p class="hero-lede">在山间和自己独处，是一种行禅。</p>
+		</section>
+
+		<section class="races" aria-label="比赛记录">
+			{
+				entries.map((race, index) => (
+					<article class="race" style={`--i: ${index}`}>
+						<div class="race-meta">
+							<p class="eyebrow">RACE {String(entries.length - index).padStart(2, "0")}</p>
+							<time datetime={race.date}>{race.dateLabel}</time>
+						</div>
+
+						<div class="race-body">
+							<div class="race-info">
+								<header class="race-header">
+									<h2 class="race-name">{race.name}</h2>
+									{(race.distance || race.elevation) && (
+										<p class="race-stats">
+											{race.distance && <span>{race.distance}</span>}
+											{race.distance && race.elevation && (
+												<span aria-hidden="true">·</span>
+											)}
+											{race.elevation && <span>{race.elevation}</span>}
+										</p>
+									)}
+								</header>
+
+								{race.upcoming ? (
+									<p class="race-upcoming">UPCOMING</p>
+								) : (
+									<p class="race-result" aria-label="成绩">
+										<span class="race-result__label">FINISH</span>
+										<span class="race-result__time">{race.result}</span>
+									</p>
+								)}
+							</div>
+
+							{race.photo ? (
+								<figure
+									class:list={["race-gallery", { "is-upcoming": race.upcoming }]}
+								>
+									<img
+										class="race-photo"
+										src={race.photo.src}
+										alt={race.photo.alt}
+										width="1600"
+										height="1067"
+										loading={index === 0 ? "eager" : "lazy"}
+									/>
+								</figure>
+							) : (
+								<div class="race-placeholder" aria-hidden="true">
+									<svg viewBox="0 0 360 240" fill="none" role="presentation">
+										<path
+											d="M0 186 L64 128 L104 156 L168 84 L224 138 L272 102 L360 178"
+											stroke="currentColor"
+											stroke-width="1.25"
+										/>
+										<path
+											d="M0 206 L72 160 L118 182 L186 122 L240 168 L294 140 L360 200"
+											stroke="currentColor"
+											stroke-width="1"
+											opacity="0.5"
+										/>
+										<circle cx="168" cy="84" r="3.5" stroke="currentColor" />
+									</svg>
+									<span class="race-placeholder__label">NO PHOTO YET</span>
+								</div>
+							)}
+						</div>
+					</article>
+				))
+			}
+		</section>
+
+		<section class="goals" id="goals" aria-labelledby="goals-title">
+			<p class="eyebrow">NEAR-TERM WISHES</p>
+			<h2 id="goals-title">近期心愿</h2>
+			<ol class="goals-list">
+				{
+					goals.map((goal, index) => (
+						<li>
+							<span class="goals-index">{String(index + 1).padStart(2, "0")}</span>
+							<span class="goals-name">{goal}</span>
+						</li>
+					))
+				}
+			</ol>
+		</section>
+	</main>
+</Base>
+
+<style>
+	.hero {
+		position: relative;
+		isolation: isolate;
+		overflow: hidden;
+		padding-block: 96px 56px;
+	}
+
+	.hero-backdrop {
+		position: absolute;
+		inset: 24px 0 0;
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	.hero-contour {
+		position: absolute;
+		right: -4%;
+		left: 38%;
+		height: 1px;
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			var(--color-hairline) 12%,
+			var(--color-hairline) 88%,
+			transparent 100%
+		);
+		transform-origin: left center;
+		animation: contour-in 900ms ease both;
+	}
+
+	.hero-contour--a {
+		top: 28%;
+		--tilt: -7deg;
+		animation-delay: 80ms;
+	}
+
+	.hero-contour--b {
+		top: 48%;
+		left: 48%;
+		--tilt: -4deg;
+		animation-delay: 180ms;
+	}
+
+	.hero-contour--c {
+		top: 68%;
+		left: 58%;
+		--tilt: -2deg;
+		animation-delay: 280ms;
+	}
+
+	.hero-tick {
+		position: absolute;
+		width: 1px;
+		height: 48px;
+		background: var(--color-hairline);
+	}
+
+	.hero-tick--left {
+		top: 38%;
+		left: 46%;
+		animation: fade-rise 700ms ease 220ms both;
+	}
+
+	.hero-tick--right {
+		top: 58%;
+		right: 18%;
+		animation: fade-rise 700ms ease 320ms both;
+	}
+
+	.hero-label {
+		position: absolute;
+		color: var(--color-smoke);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-eyebrow);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		animation: fade-rise 700ms ease both;
+	}
+
+	.hero-label--elev {
+		top: 22%;
+		right: 12%;
+		animation-delay: 360ms;
+	}
+
+	.hero-label--dist {
+		right: 28%;
+		bottom: 18%;
+		animation-delay: 440ms;
+	}
+
+	.eyebrow {
+		position: relative;
+		z-index: 1;
+		color: var(--color-slate);
+		animation: fade-rise 600ms ease both;
+	}
+
+	.hero-title {
+		position: relative;
+		z-index: 1;
+		margin: 0;
+		color: var(--color-obsidian);
+		font-size: clamp(48px, 7vw, 84px);
+		font-weight: 700;
+		line-height: 1.08;
+		letter-spacing: 0.04em;
+		animation: fade-rise 700ms ease 80ms both;
+	}
+
+	.hero-lede {
+		position: relative;
+		z-index: 1;
+		max-width: 28ch;
+		margin: var(--spacing-20) 0 0;
+		color: var(--color-charcoal);
+		font-family: var(--font-wenkai);
+		font-size: clamp(16px, 1.6vw, 18px);
+		line-height: 1.7;
+		animation: fade-rise 700ms ease 160ms both;
+	}
+
+	.races {
+		padding-bottom: var(--spacing-40);
+	}
+
+	.goals {
+		margin-bottom: var(--spacing-section);
+		padding: clamp(var(--spacing-32), 6vw, 80px);
+		border-radius: var(--radius-card);
+		color: var(--color-pure-white);
+		background: var(--color-obsidian);
+	}
+
+	.goals .eyebrow {
+		margin: 0 0 var(--spacing-12);
+		color: var(--color-smoke);
+		animation: none;
+	}
+
+	.goals h2 {
+		margin: 0;
+		color: var(--color-pure-white);
+		font-size: clamp(30px, 3.8vw, 44px);
+		font-weight: 700;
+		line-height: 1.2;
+		letter-spacing: 0.02em;
+	}
+
+	.goals-list {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--spacing-16) var(--spacing-32);
+		margin: var(--spacing-32) 0 0;
+		padding: var(--spacing-32) 0 0;
+		list-style: none;
+		border-top: 1px solid rgb(255 255 255 / 12%);
+	}
+
+	.goals-list li {
+		display: flex;
+		align-items: baseline;
+		gap: var(--spacing-12);
+		min-width: 0;
+	}
+
+	.goals-index {
+		flex-shrink: 0;
+		color: var(--color-smoke);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-eyebrow);
+		letter-spacing: var(--tracking-label);
+	}
+
+	.goals-name {
+		font-family: var(--font-source-han-serif);
+		font-size: clamp(18px, 1.8vw, 22px);
+		font-weight: 600;
+		line-height: 1.4;
+		letter-spacing: 0.02em;
+	}
+
+	.race {
+		display: grid;
+		grid-template-columns: minmax(120px, 0.28fr) minmax(0, 1fr);
+		gap: clamp(var(--spacing-24), 4vw, 56px);
+		padding-block: var(--spacing-40);
+		border-top: 1px solid var(--color-hairline);
+		animation: fade-rise 800ms ease calc(240ms + var(--i) * 80ms) both;
+	}
+
+	.race-meta {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-8);
+		padding-top: 4px;
+	}
+
+	.race-meta .eyebrow {
+		margin: 0;
+		animation: none;
+	}
+
+	.race-meta time {
+		color: var(--color-obsidian);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-caption);
+		letter-spacing: var(--tracking-label);
+	}
+
+	.race-body {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+		gap: clamp(var(--spacing-24), 4vw, 56px);
+		align-items: start;
+	}
+
+	.race-info {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.race-header {
+		margin-bottom: var(--spacing-32);
+	}
+
+	.race-name {
+		margin: 0;
+		font-size: clamp(28px, 3.4vw, 40px);
+		font-weight: 700;
+		line-height: 1.25;
+		letter-spacing: 0.02em;
+	}
+
+	.race-stats {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-8);
+		margin: var(--spacing-16) 0 0;
+		color: var(--color-stone);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-caption);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+	}
+
+	.race-result {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-8);
+		margin: 0;
+	}
+
+	.race-result__label {
+		color: var(--color-smoke);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-eyebrow);
+		letter-spacing: var(--tracking-label);
+	}
+
+	.race-result__time {
+		color: var(--color-stone);
+		font-family: var(--font-geist-mono);
+		font-size: clamp(22px, 2.4vw, 30px);
+		font-weight: var(--font-weight-regular);
+		line-height: 1;
+		letter-spacing: -0.02em;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.race-upcoming {
+		display: inline-flex;
+		align-self: flex-start;
+		margin: 0;
+		padding: var(--spacing-6) var(--spacing-12);
+		border: 1px solid var(--color-ash);
+		border-radius: var(--radius-pill);
+		color: var(--color-slate);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-eyebrow);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+	}
+
+	.race-gallery {
+		margin: 0;
+	}
+
+	.race-photo {
+		display: block;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 3 / 2;
+		object-fit: cover;
+		background: var(--color-hairline);
+	}
+
+	.race-gallery.is-upcoming .race-photo {
+		filter: grayscale(1);
+		opacity: 0.75;
+	}
+
+	.race-placeholder {
+		position: relative;
+		display: grid;
+		place-items: center;
+		aspect-ratio: 3 / 2;
+		border: 1px solid var(--color-hairline);
+		color: var(--color-ash);
+		background: var(--color-pure-white);
+	}
+
+	.race-placeholder svg {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	.race-placeholder__label {
+		position: absolute;
+		top: var(--spacing-16);
+		left: var(--spacing-16);
+		color: var(--color-smoke);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-eyebrow);
+		letter-spacing: var(--tracking-label);
+	}
+
+	@keyframes fade-rise {
+		from {
+			opacity: 0;
+			transform: translateY(12px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@keyframes contour-in {
+		from {
+			opacity: 0;
+			transform: rotate(var(--tilt, -7deg)) scaleX(0.72);
+		}
+		to {
+			opacity: 1;
+			transform: rotate(var(--tilt, -7deg)) scaleX(1);
+		}
+	}
+
+	@media (hover: hover) {
+		.race-photo {
+			transition: opacity 220ms ease;
+		}
+
+		.race:hover .race-photo {
+			opacity: 0.92;
+		}
+
+		.race:hover .race-photo:hover {
+			opacity: 1;
+		}
+	}
+
+	@media (max-width: 960px) {
+		.race-body {
+			grid-template-columns: 1fr;
+			gap: var(--spacing-24);
+		}
+	}
+
+	@media (max-width: 800px) {
+		.race {
+			grid-template-columns: 1fr;
+			gap: var(--spacing-20);
+		}
+
+		.race-meta {
+			flex-direction: row;
+			align-items: baseline;
+			justify-content: space-between;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.hero {
+			padding-block: 64px 40px;
+		}
+
+		.hero-contour--b,
+		.hero-contour--c,
+		.hero-tick,
+		.hero-label--dist {
+			display: none;
+		}
+
+		.hero-title {
+			font-size: clamp(40px, 12vw, 56px);
+		}
+
+		.goals-list {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

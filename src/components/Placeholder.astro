@@ -1,0 +1,65 @@
+---
+import { withBase } from "../lib/base";
+
+interface Props {
+	label: string;
+	title: string;
+}
+
+const { label, title } = Astro.props;
+---
+
+<main class="page-shell placeholder">
+	<div>
+		<p class="eyebrow">{label}</p>
+		<h1>{title}</h1>
+		<p class="note">这一部分的内容还在准备中，敬请期待。</p>
+		<a class="ghost-link" href={withBase("/podcast/")}>先去听播客 <span aria-hidden="true">→</span></a>
+	</div>
+</main>
+
+<style>
+	.placeholder {
+		display: grid;
+		align-content: center;
+		min-height: calc(100vh - 240px);
+		padding-block: var(--spacing-section);
+	}
+
+	h1 {
+		margin: 0 0 var(--spacing-20);
+		font-size: clamp(48px, 6.5vw, 84px);
+		font-weight: 600;
+		line-height: 1.1;
+		letter-spacing: 0.04em;
+	}
+
+	.note {
+		margin: 0 0 var(--spacing-32);
+		color: var(--color-charcoal);
+		font-size: var(--text-body);
+	}
+
+	.ghost-link {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-12);
+		height: var(--button-height);
+		padding-inline: var(--spacing-20);
+		border-radius: var(--radius-button);
+		color: var(--color-charcoal);
+		box-shadow: var(--shadow-hairline);
+		font-size: 14px;
+		text-decoration: none;
+	}
+
+	@media (hover: hover) {
+		.ghost-link {
+			transition: color 160ms ease;
+		}
+
+		.ghost-link:hover {
+			color: var(--color-obsidian);
+		}
+	}
+</style>

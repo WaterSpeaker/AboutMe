@@ -1,0 +1,991 @@
+---
+import Base from "../layouts/Base.astro";
+import photos from "../data/photos.json";
+import { homeCopy, photoCaptions } from "../i18n/home";
+import { withBase } from "../lib/base";
+
+const zh = homeCopy.zh;
+const en = homeCopy.en;
+
+// 按累计高度贪心分列（先分高图再分矮图），让每列尽量一样高；列内保持表格顺序
+const COLUMN_COUNT = 4;
+const photoColumns = Array.from({ length: COLUMN_COUNT }, () => []);
+const columnHeights = new Array(COLUMN_COUNT).fill(0);
+
+const byAspectDesc = photos
+	.map((photo, index) => ({ ...photo, order: index }))
+	.sort((a, b) => b.height / b.width - a.height / a.width);
+
+for (const photo of byAspectDesc) {
+	let target = 0;
+	for (let i = 1; i < COLUMN_COUNT; i += 1) {
+		if (
+			columnHeights[i] < columnHeights[target] ||
+			(columnHeights[i] === columnHeights[target] &&
+				photoColumns[i].length < photoColumns[target].length)
+		) {
+			target = i;
+		}
+	}
+	photoColumns[target].push(photo);
+	columnHeights[target] += photo.height / photo.width;
+}
+
+for (const column of photoColumns) {
+	column.sort((a, b) => a.order - b.order);
+}
+
+// 将每列的展示高宽比缩放到同一总高度，用轻微裁切换取列高完全对齐
+const targetUnits =
+	columnHeights.reduce((sum, units) => sum + units, 0) / COLUMN_COUNT;
+
+const displayColumns = photoColumns.map((column, columnIndex) => {
+	const scale = targetUnits / columnHeights[columnIndex];
+	return column.map((photo) => {
+		const captions = photoCaptions[photo.id] ?? {
+			zh: photo.caption,
+			en: photo.caption,
+		};
+		return {
+			...photo,
+			captionZh: captions.zh,
+			captionEn: captions.en,
+			// CSS aspect-ratio 取 width / height
+			displayRatio: (photo.width / photo.height / scale).toFixed(4),
+		};
+	});
+});
+---
+
+<Base
+	title={zh.title}
+	titleEn={en.title}
+	description={zh.description}
+	descriptionEn={en.description}
+	active="home"
+>
+	<main class="page-shell">
+		<section class="hero" aria-labelledby="intro-title">
+			<div class="hero-backdrop" aria-hidden="true">
+				<span class="hero-arc hero-arc--outer"></span>
+				<span class="hero-arc hero-arc--inner"></span>
+				<span class="hero-wave">
+					<i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+				</span>
+				<span class="hero-cross hero-cross--one"></span>
+				<span class="hero-cross hero-cross--two"></span>
+				<span class="hero-deco-label hero-deco-label--top">ON AIR</span>
+				<span class="hero-deco-label hero-deco-label--bottom">SAY HI</span>
+			</div>
+
+			<div class="hero-copy">
+				<p class="eyebrow">ABOUT ME</p>
+				<h1 id="intro-title">
+					<span class="i18n-zh">{zh.greeting}</span>
+					<span class="i18n-en">{en.greeting}</span>
+				</h1>
+				<div class="intro-text">
+					{zh.intro.map((paragraph, index) => (
+						<p>
+							<span class="i18n-zh">{paragraph}</span>
+							<span class="i18n-en">{en.intro[index]}</span>
+						</p>
+					))}
+				</div>
+				<div class="contact-row">
+					<div class="contact" data-contact>
+						<button
+							type="button"
+							class="contact-btn"
+							aria-expanded="false"
+							aria-controls="wechat-card"
+						>
+							wechat
+						</button>
+						<div id="wechat-card" class="contact-card" role="tooltip" hidden>
+							<img
+								src={withBase("/wechat-qr.png")}
+								alt={zh.wechatAlt}
+								data-alt-zh={zh.wechatAlt}
+								data-alt-en={en.wechatAlt}
+								width="686"
+								height="840"
+							/>
+						</div>
+					</div>
+					<div class="contact" data-contact>
+						<button
+							type="button"
+							class="contact-btn"
+							aria-expanded="false"
+							aria-controls="lark-card"
+						>
+							Lark
+						</button>
+						<div id="lark-card" class="contact-card" role="tooltip" hidden>
+							<img
+								src={withBase("/lark-qr.png")}
+								alt={zh.larkAlt}
+								data-alt-zh={zh.larkAlt}
+								data-alt-en={en.larkAlt}
+								width="686"
+								height="840"
+							/>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="facts" aria-labelledby="facts-title">
+			<div class="section-heading">
+				<div>
+					<p class="eyebrow">01 · FUN FACTS</p>
+					<h2 id="facts-title">
+						<span class="i18n-zh">{zh.factsTitle}</span>
+						<span class="i18n-en">{en.factsTitle}</span>
+					</h2>
+				</div>
+				<p class="section-intro">
+					<span class="i18n-zh">{zh.factsIntro}</span>
+					<span class="i18n-en">{en.factsIntro}</span>
+				</p>
+			</div>
+			<div class="fact-list">
+				{zh.funFacts.map((fact, index) => (
+					<article class="fact">
+						<span class="fact-index">{String(index + 1).padStart(2, "0")}</span>
+						<p>
+							<span class="i18n-zh">{fact}</span>
+							<span class="i18n-en">{en.funFacts[index]}</span>
+						</p>
+					</article>
+				))}
+			</div>
+		</section>
+
+		<section class="recs" aria-labelledby="recs-title">
+			<div class="section-heading">
+				<div>
+					<p class="eyebrow">02 · RECOMMENDATIONS</p>
+					<h2 id="recs-title">
+						<span class="i18n-zh">{zh.recsTitle}</span>
+						<span class="i18n-en">{en.recsTitle}</span>
+					</h2>
+				</div>
+				<p class="section-intro">
+					<span class="i18n-zh">{zh.recsIntro}</span>
+					<span class="i18n-en">{en.recsIntro}</span>
+				</p>
+			</div>
+			<div class="rec-grid">
+				{zh.recommendations.map((group, groupIndex) => (
+					<article class="rec-card">
+						<p class="eyebrow">{group.label}</p>
+						<h3>
+							<span class="i18n-zh">{group.title}</span>
+							<span class="i18n-en">{en.recommendations[groupIndex].title}</span>
+						</h3>
+						<ul>
+							{group.items.map((item, itemIndex) => (
+								<li>
+									<span class="i18n-zh">{item}</span>
+									<span class="i18n-en">
+										{en.recommendations[groupIndex].items[itemIndex]}
+									</span>
+								</li>
+							))}
+						</ul>
+					</article>
+				))}
+			</div>
+		</section>
+
+		<section class="moments" aria-labelledby="moments-title">
+			<div class="section-heading">
+				<div>
+					<p class="eyebrow">03 · MOMENTS</p>
+					<h2 id="moments-title">
+						<span class="i18n-zh">{zh.momentsTitle}</span>
+						<span class="i18n-en">{en.momentsTitle}</span>
+					</h2>
+				</div>
+				<p class="section-intro">
+					<span class="i18n-zh">{zh.momentsIntro}</span>
+					<span class="i18n-en">{en.momentsIntro}</span>
+				</p>
+			</div>
+			<div class="photo-masonry">
+				{displayColumns.map((column) => (
+					<div class="photo-column">
+						{column.map((photo) => (
+							<figure
+								class="photo-item"
+								tabindex="0"
+								style={`aspect-ratio: ${photo.displayRatio}`}
+							>
+								<div class="photo-flip">
+									<div class="photo-face photo-face--front">
+										<img
+											src={withBase(photo.src)}
+											alt={photo.captionZh}
+											data-alt-zh={photo.captionZh}
+											data-alt-en={photo.captionEn}
+											width={photo.width}
+											height={photo.height}
+											loading={photo.order < 4 ? "eager" : "lazy"}
+										/>
+									</div>
+									<figcaption class="photo-face photo-face--back">
+										<span class="photo-index">{String(photo.order + 1).padStart(2, "0")}</span>
+										<span class="photo-caption">
+											<span class="i18n-zh">{photo.captionZh}</span>
+											<span class="i18n-en">{photo.captionEn}</span>
+										</span>
+									</figcaption>
+								</div>
+							</figure>
+						))}
+					</div>
+				))}
+			</div>
+		</section>
+	</main>
+</Base>
+
+<style>
+	h1,
+	h2,
+	h3,
+	p {
+		margin-top: 0;
+	}
+
+	.hero {
+		position: relative;
+		isolation: isolate;
+		padding-block: 96px;
+	}
+
+	.hero-copy {
+		position: relative;
+		z-index: 1;
+	}
+
+	.hero-backdrop {
+		position: absolute;
+		inset: 24px 0 0;
+		z-index: 0;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	/* 同心圆弧：锥形色带渐变，旋转时像唱片反光掠过 */
+	.hero-arc {
+		position: absolute;
+		top: 50%;
+		right: -14%;
+		aspect-ratio: 1;
+		border: 0;
+		border-radius: 50%;
+		transform: translateY(-50%);
+		background: conic-gradient(
+			from 0deg,
+			color-mix(in srgb, var(--color-ash) 28%, transparent) 0deg,
+			color-mix(in srgb, var(--color-ash) 55%, transparent) 40deg,
+			color-mix(in srgb, var(--color-smoke) 70%, transparent) 110deg,
+			color-mix(in srgb, var(--color-ash) 85%, transparent) 180deg,
+			color-mix(in srgb, var(--color-smoke) 60%, transparent) 250deg,
+			color-mix(in srgb, var(--color-ash) 50%, transparent) 310deg,
+			color-mix(in srgb, var(--color-ash) 28%, transparent) 360deg
+		);
+		-webkit-mask-image:
+			radial-gradient(
+				farthest-side,
+				transparent calc(100% - 0.75px),
+				#000 calc(100% - 0.75px)
+			),
+			linear-gradient(115deg, #000 52%, transparent 86%);
+		mask-image:
+			radial-gradient(
+				farthest-side,
+				transparent calc(100% - 0.75px),
+				#000 calc(100% - 0.75px)
+			),
+			linear-gradient(115deg, #000 52%, transparent 86%);
+		-webkit-mask-composite: source-in;
+		mask-composite: intersect;
+		opacity: 0;
+		animation:
+			arc-in 700ms ease forwards,
+			arc-spin 12s linear 700ms infinite;
+		will-change: transform;
+	}
+
+	.hero-arc--outer {
+		width: clamp(340px, 46vw, 620px);
+	}
+
+	.hero-arc--inner {
+		width: clamp(200px, 28vw, 380px);
+		background: conic-gradient(
+			from 180deg,
+			color-mix(in srgb, var(--color-ash) 22%, transparent) 0deg,
+			color-mix(in srgb, var(--color-ash) 45%, transparent) 50deg,
+			color-mix(in srgb, var(--color-ash) 75%, transparent) 130deg,
+			color-mix(in srgb, var(--color-smoke) 65%, transparent) 200deg,
+			color-mix(in srgb, var(--color-ash) 50%, transparent) 280deg,
+			color-mix(in srgb, var(--color-ash) 22%, transparent) 360deg
+		);
+		animation:
+			arc-in 700ms ease 120ms forwards,
+			arc-spin-reverse 8s linear 820ms infinite;
+	}
+
+	/* 声波条：一段静止的音频波形 */
+	.hero-wave {
+		position: absolute;
+		top: 24%;
+		right: 24%;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		height: 44px;
+		animation: fade-rise 700ms ease 320ms both;
+	}
+
+	.hero-wave i {
+		width: 1px;
+		background: var(--color-ash);
+	}
+
+	.hero-wave i:nth-child(1) { height: 24%; }
+	.hero-wave i:nth-child(2) { height: 52%; }
+	.hero-wave i:nth-child(3) { height: 36%; }
+	.hero-wave i:nth-child(4) { height: 88%; }
+	.hero-wave i:nth-child(5) { height: 60%; }
+	.hero-wave i:nth-child(6) { height: 100%; }
+	.hero-wave i:nth-child(7) { height: 44%; }
+	.hero-wave i:nth-child(8) { height: 68%; }
+	.hero-wave i:nth-child(9) { height: 30%; }
+
+	/* 十字标记：地图/坐标式的小点缀 */
+	.hero-cross {
+		position: absolute;
+		width: 9px;
+		height: 9px;
+		animation: fade-rise 700ms ease both;
+	}
+
+	.hero-cross::before,
+	.hero-cross::after {
+		content: "";
+		position: absolute;
+		background: var(--color-ash);
+	}
+
+	.hero-cross::before {
+		top: 50%;
+		right: 0;
+		left: 0;
+		height: 1px;
+	}
+
+	.hero-cross::after {
+		top: 0;
+		bottom: 0;
+		left: 50%;
+		width: 1px;
+	}
+
+	.hero-cross--one {
+		top: 66%;
+		right: 34%;
+		animation-delay: 260ms;
+	}
+
+	.hero-cross--two {
+		top: 18%;
+		right: 10%;
+		animation-delay: 380ms;
+	}
+
+	.hero-deco-label {
+		position: absolute;
+		color: var(--color-smoke);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-eyebrow);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		animation: fade-rise 700ms ease both;
+	}
+
+	.hero-deco-label--top {
+		top: 12%;
+		right: 25%;
+		animation-delay: 440ms;
+	}
+
+	.hero-deco-label--bottom {
+		right: 8%;
+		bottom: 14%;
+		animation-delay: 520ms;
+	}
+
+	@keyframes fade-rise {
+		from {
+			opacity: 0;
+			transform: translateY(12px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	@keyframes arc-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes arc-spin {
+		from {
+			transform: translateY(-50%) rotate(0deg);
+		}
+		to {
+			transform: translateY(-50%) rotate(360deg);
+		}
+	}
+
+	@keyframes arc-spin-reverse {
+		from {
+			transform: translateY(-50%) rotate(0deg);
+		}
+		to {
+			transform: translateY(-50%) rotate(-360deg);
+		}
+	}
+
+	h1 {
+		margin-bottom: var(--spacing-24);
+		font-size: clamp(40px, 5.5vw, 68px);
+		font-weight: 600;
+		line-height: 1.15;
+		letter-spacing: 0.04em;
+	}
+
+	.intro-text {
+		max-width: 820px;
+		color: var(--color-stone);
+		font-size: 15px;
+		line-height: 2;
+	}
+
+	.intro-text p {
+		margin: 0;
+	}
+
+	.intro-text p + p {
+		margin-top: var(--spacing-12);
+	}
+
+	.contact-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-12);
+		margin-top: var(--spacing-32);
+	}
+
+	.contact {
+		position: relative;
+		display: inline-block;
+		z-index: 3;
+	}
+
+	.contact-btn {
+		height: 32px;
+		padding-inline: var(--spacing-14);
+		border: 0;
+		border-radius: var(--radius-pill);
+		color: var(--color-charcoal);
+		background: var(--color-pure-white);
+		box-shadow: var(--shadow-hairline);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-eyebrow);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	.contact-card {
+		position: absolute;
+		z-index: 4;
+		top: calc(100% + var(--spacing-12));
+		left: 0;
+		width: min(260px, calc(100vw - 48px));
+		padding: var(--spacing-12);
+		border-radius: var(--radius-card);
+		background: var(--color-pure-white);
+		box-shadow: 0 0 0 1px var(--color-hairline);
+		opacity: 0;
+		visibility: hidden;
+		transform: translateY(6px) scale(0.97);
+		transition:
+			opacity 220ms ease,
+			transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+			visibility 220ms ease,
+			box-shadow 220ms ease;
+		pointer-events: none;
+	}
+
+	.contact-card.is-visible {
+		opacity: 1;
+		visibility: visible;
+		transform: translateY(0) scale(1);
+		pointer-events: auto;
+		animation: contact-card-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	.contact-card img {
+		display: block;
+		width: 100%;
+		aspect-ratio: 686 / 840;
+		height: auto;
+		object-fit: cover;
+		object-position: center top;
+		border-radius: 2px;
+	}
+
+	@keyframes contact-card-enter {
+		from {
+			opacity: 0.88;
+			transform: translateY(6px) scale(0.98);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
+
+	@media (hover: hover) {
+		.contact-btn {
+			transition:
+				color 160ms ease,
+				box-shadow 160ms ease;
+		}
+
+		.contact-btn:hover,
+		.contact-btn[aria-expanded="true"] {
+			color: var(--color-obsidian);
+		}
+
+		.contact-card.is-visible:hover {
+			transform: translateY(-4px) scale(1);
+			box-shadow:
+				0 0 0 1px var(--color-hairline),
+				0 14px 36px rgb(0 0 0 / 10%);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-arc,
+		.hero-arc--inner {
+			animation: none;
+			opacity: 1;
+			transform: translateY(-50%);
+		}
+
+		.contact-card,
+		.contact-card.is-visible {
+			transition: none;
+			animation: none;
+		}
+	}
+
+	h2 {
+		margin-bottom: 0;
+		font-size: clamp(34px, 4.2vw, 48px);
+		font-weight: 700;
+		line-height: 1.2;
+		letter-spacing: 0.02em;
+	}
+
+	.section-heading {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: var(--spacing-32);
+		margin-bottom: var(--spacing-44);
+	}
+
+	.section-intro {
+		max-width: 310px;
+		margin: 0;
+		color: var(--color-charcoal);
+		font-size: 14px;
+		line-height: 1.7;
+	}
+
+	.facts,
+	.recs,
+	.moments {
+		padding-block: var(--spacing-section);
+	}
+
+	.fact-list {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--spacing-20);
+	}
+
+	.fact {
+		padding: var(--card-padding);
+		border-radius: var(--radius-card);
+		background: var(--color-pure-white);
+		box-shadow: var(--shadow-subtle);
+	}
+
+	.fact-index {
+		display: block;
+		margin-bottom: var(--spacing-16);
+		color: var(--color-stone);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-eyebrow);
+		letter-spacing: var(--tracking-label);
+	}
+
+	.fact p {
+		margin: 0;
+		font-family: var(--font-source-han-serif);
+		font-size: clamp(18px, 1.6vw, 22px);
+		font-weight: 600;
+		line-height: 1.6;
+	}
+
+	.rec-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--spacing-20);
+	}
+
+	.rec-card {
+		padding: var(--card-padding);
+		border-radius: var(--radius-card);
+		background: var(--color-pure-white);
+		box-shadow: var(--shadow-subtle);
+	}
+
+	.rec-card .eyebrow {
+		color: var(--color-stone);
+	}
+
+	h3 {
+		margin-bottom: var(--spacing-16);
+		font-family: var(--font-source-han-serif);
+		font-size: clamp(20px, 1.8vw, 24px);
+		font-weight: 600;
+		line-height: 1.5;
+	}
+
+	.rec-card ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-8);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.rec-card li {
+		padding: var(--spacing-4) var(--spacing-12);
+		border-radius: var(--radius-pill);
+		color: var(--color-charcoal);
+		box-shadow: var(--shadow-hairline);
+		font-size: var(--text-caption);
+		line-height: var(--leading-caption);
+	}
+
+	.photo-masonry {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: var(--spacing-20);
+		align-items: start;
+	}
+
+	.photo-column {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-20);
+	}
+
+	.photo-item {
+		min-height: 0;
+		margin: 0;
+		overflow: hidden;
+		perspective: 1200px;
+		outline: none;
+	}
+
+	.photo-flip {
+		position: relative;
+		height: 100%;
+		transform-style: preserve-3d;
+		transition: transform 640ms cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.photo-item:hover .photo-flip,
+	.photo-item:focus-visible .photo-flip {
+		transform: rotateY(180deg);
+	}
+
+	.photo-face {
+		backface-visibility: hidden;
+	}
+
+	.photo-face--front {
+		height: 100%;
+		overflow: hidden;
+		border-radius: var(--radius-card);
+		background: var(--color-hairline);
+		box-shadow: var(--shadow-subtle);
+	}
+
+	.photo-face--front img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.photo-face--back {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		margin: 0;
+		padding: var(--card-padding);
+		border-radius: var(--radius-card);
+		color: var(--color-obsidian);
+		background: var(--color-hairline);
+		transform: rotateY(180deg);
+	}
+
+	.photo-index {
+		position: absolute;
+		top: var(--card-padding);
+		left: var(--card-padding);
+		color: var(--color-graphite);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-eyebrow);
+		letter-spacing: var(--tracking-label);
+	}
+
+	.photo-caption {
+		font-family: var(--font-source-han-serif);
+		font-size: clamp(18px, 1.8vw, 24px);
+		font-weight: 600;
+		line-height: 1.7;
+		text-align: center;
+	}
+
+	@media (max-width: 960px) {
+		.fact-list,
+		.rec-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.photo-masonry {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 680px) {
+		:global(:root) {
+			--spacing-section: 80px;
+		}
+
+		.hero {
+			padding-block: 72px;
+		}
+
+		.hero-arc--outer {
+			right: -32%;
+			width: 78vw;
+			opacity: 0.7;
+		}
+
+		.hero-arc--inner,
+		.hero-wave,
+		.hero-cross--one,
+		.hero-deco-label--top {
+			display: none;
+		}
+
+		.section-heading {
+			align-items: start;
+			flex-direction: column;
+		}
+
+		.photo-masonry {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
+
+<script>
+	const HIDE_DELAY_MS = 180;
+	const EDGE_GAP = 16;
+	const prefersReducedMotion = window.matchMedia(
+		"(prefers-reduced-motion: reduce)",
+	).matches;
+
+	const initContact = (root: HTMLElement) => {
+		const button = root.querySelector<HTMLButtonElement>(".contact-btn");
+		const card = root.querySelector<HTMLElement>(".contact-card");
+		if (!button || !card) return;
+
+		let hideTimer: ReturnType<typeof setTimeout> | null = null;
+		let btnHovered = false;
+		let cardHovered = false;
+		let open = false;
+
+		const cancelHide = () => {
+			if (hideTimer != null) {
+				clearTimeout(hideTimer);
+				hideTimer = null;
+			}
+		};
+
+		const placeCard = () => {
+			card.style.left = "0px";
+			card.style.right = "auto";
+			card.style.top = "";
+			card.style.bottom = "";
+
+			const gap = 12;
+			const rootRect = root.getBoundingClientRect();
+			const cardRect = card.getBoundingClientRect();
+			const viewportW = window.innerWidth;
+			const viewportH = window.innerHeight;
+
+			const spaceBelow = viewportH - rootRect.bottom - EDGE_GAP;
+			const spaceAbove = rootRect.top - EDGE_GAP;
+			const placeAbove =
+				cardRect.height > spaceBelow && spaceAbove > spaceBelow;
+
+			if (placeAbove) {
+				card.style.top = "auto";
+				card.style.bottom = `calc(100% + ${gap}px)`;
+			} else {
+				card.style.top = `calc(100% + ${gap}px)`;
+				card.style.bottom = "auto";
+			}
+
+			const updated = card.getBoundingClientRect();
+			let shift = 0;
+			if (updated.left < EDGE_GAP) {
+				shift = EDGE_GAP - updated.left;
+			} else if (updated.right > viewportW - EDGE_GAP) {
+				shift = viewportW - EDGE_GAP - updated.right;
+			}
+			card.style.left = `${shift}px`;
+		};
+
+		const show = () => {
+			cancelHide();
+			if (open) {
+				placeCard();
+				return;
+			}
+			open = true;
+			card.hidden = false;
+			button.setAttribute("aria-expanded", "true");
+			requestAnimationFrame(() => {
+				card.classList.add("is-visible");
+				placeCard();
+			});
+		};
+
+		const hide = () => {
+			cancelHide();
+			open = false;
+			btnHovered = false;
+			cardHovered = false;
+			button.setAttribute("aria-expanded", "false");
+			card.classList.remove("is-visible");
+			const finish = () => {
+				if (!open) card.hidden = true;
+			};
+			if (prefersReducedMotion) {
+				finish();
+			} else {
+				window.setTimeout(finish, 220);
+			}
+		};
+
+		const maybeHide = () => {
+			if (!btnHovered && !cardHovered && document.activeElement !== button) {
+				hide();
+			}
+		};
+
+		const scheduleHide = () => {
+			cancelHide();
+			hideTimer = setTimeout(
+				maybeHide,
+				prefersReducedMotion ? 0 : HIDE_DELAY_MS,
+			);
+		};
+
+		button.addEventListener("mouseenter", () => {
+			btnHovered = true;
+			show();
+		});
+		button.addEventListener("mouseleave", () => {
+			btnHovered = false;
+			scheduleHide();
+		});
+		card.addEventListener("mouseenter", () => {
+			cardHovered = true;
+			cancelHide();
+		});
+		card.addEventListener("mouseleave", () => {
+			cardHovered = false;
+			scheduleHide();
+		});
+
+		button.addEventListener("focus", show);
+		button.addEventListener("blur", scheduleHide);
+
+		button.addEventListener("click", (event) => {
+			event.preventDefault();
+			btnHovered = true;
+			show();
+		});
+
+		document.addEventListener("keydown", (event) => {
+			if (event.key === "Escape" && open) {
+				hide();
+				button.blur();
+			}
+		});
+
+		document.addEventListener("pointerdown", (event) => {
+			if (!open) return;
+			const target = event.target as Node | null;
+			if (target && !root.contains(target)) hide();
+		});
+
+		window.addEventListener("resize", () => {
+			if (open) placeCard();
+		});
+	};
+
+	for (const root of document.querySelectorAll<HTMLElement>("[data-contact]")) {
+		initContact(root);
+	}
+</script>

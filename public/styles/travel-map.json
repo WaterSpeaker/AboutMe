@@ -1,0 +1,114 @@
+{
+  "version": 8,
+  "name": "Travel",
+  "sources": {
+    "openmaptiles": {
+      "type": "vector",
+      "url": "https://tiles.openfreemap.org/planet"
+    }
+  },
+  "glyphs": "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "#f2f2f2"
+      }
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "water",
+      "filter": [
+        "match",
+        ["geometry-type"],
+        ["MultiPolygon", "Polygon"],
+        true,
+        false
+      ],
+      "paint": {
+        "fill-antialias": true,
+        "fill-color": "#fafafa"
+      }
+    },
+    {
+      "id": "waterway",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "waterway",
+      "minzoom": 4,
+      "filter": [
+        "match",
+        ["geometry-type"],
+        ["LineString", "MultiLineString"],
+        true,
+        false
+      ],
+      "paint": {
+        "line-color": "#d4d4d4",
+        "line-width": 0.5
+      }
+    },
+    {
+      "id": "boundary_country",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "boundary",
+      "filter": [
+        "all",
+        ["==", ["get", "admin_level"], 2],
+        ["!=", ["get", "maritime"], 1],
+        ["!=", ["get", "disputed"], 1],
+        ["!", ["has", "claimed_by"]]
+      ],
+      "layout": {
+        "line-cap": "round",
+        "line-join": "round"
+      },
+      "paint": {
+        "line-color": "#c9c9c9",
+        "line-opacity": ["interpolate", ["linear"], ["zoom"], 0, 0.5, 3, 1],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 1, 0.6, 4, 1.2, 8, 2]
+      }
+    },
+    {
+      "id": "boundary_disputed",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "boundary",
+      "filter": [
+        "all",
+        ["!=", ["get", "maritime"], 1],
+        ["==", ["get", "disputed"], 1]
+      ],
+      "paint": {
+        "line-color": "#c9c9c9",
+        "line-dasharray": [2, 2],
+        "line-opacity": 0.6,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.6, 8, 1.5]
+      }
+    },
+    {
+      "id": "boundary_region",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "boundary",
+      "minzoom": 5,
+      "filter": [
+        "all",
+        [">=", ["get", "admin_level"], 3],
+        ["<=", ["get", "admin_level"], 6],
+        ["!=", ["get", "maritime"], 1],
+        ["!=", ["get", "disputed"], 1],
+        ["!", ["has", "claimed_by"]]
+      ],
+      "paint": {
+        "line-color": "#d4d4d4",
+        "line-dasharray": [2, 2],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.4, 10, 1]
+      }
+    }
+  ]
+}

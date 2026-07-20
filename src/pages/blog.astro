@@ -1,0 +1,320 @@
+---
+import Base from "../layouts/Base.astro";
+import posts from "../data/blog-posts.json";
+import { withBase } from "../lib/base";
+---
+
+<Base
+	title="Chen Wang｜Blog"
+	description="旅途、山野与日常里的文字记录。"
+	active="blog"
+>
+	<main class="page-shell">
+		<section class="hero" aria-labelledby="page-title">
+			<div class="hero-copy">
+				<p class="eyebrow">BLOG · NOTES FROM THE ROAD</p>
+				<h1 id="page-title">Blog</h1>
+				<p class="intro">写一些走过的路，和路上想到的事。</p>
+			</div>
+		</section>
+
+		<section class="featured" id="posts" aria-labelledby="posts-title">
+			<div class="section-heading">
+				<div>
+					<p class="eyebrow">01 · ARTICLES</p>
+					<h2 id="posts-title">文章</h2>
+				</div>
+				<p class="section-intro">旅途、山野与日常里的文字记录。</p>
+			</div>
+
+			<div class="post-list">
+				{posts.map((post, index) => (
+					<article class="post">
+						<div class="post-meta">
+							<span>ARTICLE</span>
+							<span>{String(index + 1).padStart(2, "0")}</span>
+						</div>
+						<a class="post-visual" href={withBase(`/blog/${post.slug}/`)}>
+							{post.cover ? (
+								<img src={withBase(post.cover)} alt={post.coverAlt || post.title} loading="lazy" />
+							) : (
+								<div class="post-placeholder" aria-hidden="true">
+									<div class="mini-logo"><span></span></div>
+								</div>
+							)}
+						</a>
+						<div class="post-copy">
+							<p class="post-date">{post.date}</p>
+							<h3>
+								<a href={withBase(`/blog/${post.slug}/`)}>{post.title}</a>
+							</h3>
+							<p>{post.description}</p>
+							<a class="post-link" href={withBase(`/blog/${post.slug}/`)}>
+								<span class="read-icon" aria-hidden="true">→</span>
+								阅读全文
+							</a>
+						</div>
+					</article>
+				))}
+			</div>
+		</section>
+	</main>
+</Base>
+
+<style>
+	.hero {
+		padding-block: 96px 48px;
+	}
+
+	h1,
+	h2,
+	h3,
+	p {
+		margin-top: 0;
+	}
+
+	h1 {
+		margin-bottom: var(--spacing-20);
+		font-size: clamp(48px, 6.5vw, 84px);
+		font-weight: 600;
+		line-height: 1.1;
+		letter-spacing: 0.04em;
+	}
+
+	.intro {
+		margin-bottom: 0;
+		color: var(--color-charcoal);
+		font-family: var(--font-wenkai);
+		font-size: 22px;
+		line-height: 1.6;
+	}
+
+	.featured {
+		padding-block: var(--spacing-section);
+	}
+
+	h2 {
+		margin-bottom: 0;
+		font-size: clamp(34px, 4.2vw, 48px);
+		font-weight: 700;
+		line-height: 1.2;
+		letter-spacing: 0.02em;
+	}
+
+	.section-heading {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: var(--spacing-32);
+		margin-bottom: var(--spacing-44);
+	}
+
+	.section-intro {
+		max-width: 310px;
+		margin: 0;
+		color: var(--color-charcoal);
+		font-size: 14px;
+		line-height: 1.7;
+	}
+
+	.post-list {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: var(--spacing-20);
+	}
+
+	.post {
+		display: flex;
+		min-width: 0;
+		flex-direction: column;
+		padding: var(--card-padding);
+		border-radius: var(--radius-card);
+		background: var(--color-pure-white);
+		box-shadow: var(--shadow-subtle);
+	}
+
+	.post-meta {
+		display: flex;
+		justify-content: space-between;
+		margin: 0 0 var(--spacing-12);
+		color: var(--color-stone);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-eyebrow);
+		line-height: var(--leading-eyebrow);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+	}
+
+	.post-visual {
+		display: block;
+		overflow: hidden;
+		min-height: 210px;
+		margin-bottom: var(--spacing-24);
+		border-radius: var(--radius-card);
+		background: var(--color-paper-white);
+		box-shadow: var(--shadow-hairline);
+		text-decoration: none;
+	}
+
+	.post-visual img {
+		display: block;
+		width: 100%;
+		height: 210px;
+		object-fit: cover;
+	}
+
+	.post-placeholder {
+		display: grid;
+		min-height: 210px;
+		place-items: center;
+		background: var(--color-paper-white);
+	}
+
+	.mini-logo {
+		display: grid;
+		width: 96px;
+		aspect-ratio: 1;
+		place-items: center;
+		border: 1px solid var(--color-carbon);
+		border-radius: var(--radius-pill);
+	}
+
+	.mini-logo span {
+		width: 70%;
+		height: 70%;
+		border: 1px solid var(--color-carbon);
+	}
+
+	.post-copy {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+	}
+
+	.post-date {
+		margin-bottom: var(--spacing-8);
+		color: var(--color-stone);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-eyebrow);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+	}
+
+	h3 {
+		margin-bottom: var(--spacing-16);
+		font-family: var(--font-source-han-serif);
+		font-size: clamp(20px, 1.8vw, 24px);
+		font-weight: 600;
+		line-height: 1.5;
+		letter-spacing: 0.01em;
+	}
+
+	h3 a {
+		text-decoration: none;
+	}
+
+	.post-copy > p:not(.post-date) {
+		display: -webkit-box;
+		overflow: hidden;
+		margin-bottom: var(--spacing-24);
+		color: var(--color-stone);
+		font-size: var(--text-caption);
+		line-height: 1.8;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 4;
+	}
+
+	.post-link {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-8);
+		width: fit-content;
+		margin-top: auto;
+		color: var(--color-charcoal);
+		font-size: var(--text-caption);
+		text-decoration: none;
+	}
+
+	.read-icon {
+		display: grid;
+		width: 22px;
+		height: 22px;
+		place-items: center;
+		border-radius: var(--radius-pill);
+		color: var(--color-obsidian);
+		box-shadow: 0 0 0 1px var(--color-ash);
+		font-size: 11px;
+	}
+
+	@media (hover: hover) {
+		.post-link {
+			transition: color 160ms ease;
+		}
+
+		.post-link:hover,
+		h3 a:hover {
+			color: var(--color-obsidian);
+		}
+
+		.post-visual img {
+			transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		.post-visual:hover img {
+			transform: scale(1.04);
+		}
+	}
+
+	@media (max-width: 960px) {
+		.post-list {
+			grid-template-columns: 1fr;
+		}
+
+		.post {
+			display: grid;
+			grid-template-columns: 220px 1fr;
+			gap: var(--spacing-24);
+		}
+
+		.post-meta {
+			grid-column: 1 / -1;
+		}
+
+		.post-visual {
+			min-height: 220px;
+			margin-bottom: 0;
+		}
+
+		.post-visual img {
+			height: 220px;
+		}
+	}
+
+	@media (max-width: 680px) {
+		:global(:root) {
+			--spacing-section: 80px;
+		}
+
+		.hero {
+			padding-block: 72px 32px;
+		}
+
+		.section-heading {
+			align-items: start;
+			flex-direction: column;
+		}
+
+		.post {
+			display: flex;
+		}
+
+		.post-visual {
+			min-height: 200px;
+			margin-bottom: var(--spacing-24);
+		}
+
+		.post-visual img {
+			height: 200px;
+		}
+	}
+</style>

@@ -1,0 +1,320 @@
+---
+import "../styles/global.css";
+import { footerQuote, shellCopy } from "../i18n/home";
+import { withBase } from "../lib/base";
+
+interface Props {
+	title: string;
+	description: string;
+	titleEn?: string;
+	descriptionEn?: string;
+	active: "home" | "podcast" | "trail-run" | "travel" | "blog";
+}
+
+const {
+	title,
+	description,
+	titleEn = title,
+	descriptionEn = description,
+	active,
+} = Astro.props;
+
+const tabs = [
+	{ id: "home", label: "Home", href: withBase("/") },
+	{ id: "podcast", label: "Podcast", href: withBase("/podcast/") },
+	{ id: "trail-run", label: "Trail run", href: withBase("/trail-run/") },
+	{ id: "travel", label: "Travel", href: withBase("/travel/") },
+	{ id: "blog", label: "Blog", href: withBase("/blog/") },
+];
+---
+
+<!doctype html>
+<html lang="zh-CN" data-lang="zh">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta
+			name="description"
+			content={description}
+			data-desc-zh={description}
+			data-desc-en={descriptionEn}
+		/>
+		<meta name="generator" content={Astro.generator} />
+		<link rel="icon" href={`${withBase("/favicon.ico")}?v=4`} sizes="any" />
+		<link rel="icon" type="image/svg+xml" href={`${withBase("/Podcast.svg")}?v=4`} />
+		<title data-title-zh={title} data-title-en={titleEn}>{title}</title>
+		<script is:inline>
+			(() => {
+				const lang =
+					localStorage.getItem("site-lang") === "en" ? "en" : "zh";
+				document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+				document.documentElement.dataset.lang = lang;
+				const titleEl = document.querySelector("title");
+				if (titleEl) {
+					const next =
+						lang === "en"
+							? titleEl.dataset.titleEn
+							: titleEl.dataset.titleZh;
+					if (next) titleEl.textContent = next;
+				}
+				const descEl = document.querySelector('meta[name="description"]');
+				if (descEl) {
+					const next =
+						lang === "en" ? descEl.dataset.descEn : descEl.dataset.descZh;
+					if (next) descEl.setAttribute("content", next);
+				}
+			})();
+		</script>
+	</head>
+	<body>
+		<header class="site-header">
+			<nav class="nav-shell page-shell" aria-label={shellCopy.zh.navLabel}>
+				<a class="brand" href={withBase("/")} aria-label={shellCopy.zh.homeLabel}>
+					CHEN WANG · 2026
+				</a>
+				<div class="nav-tabs">
+					{tabs.map((tab) => (
+						<a
+							href={tab.href}
+							aria-current={active === tab.id ? "page" : undefined}
+						>
+							{tab.label}
+						</a>
+					))}
+				</div>
+				<div class="lang-switch" role="group" aria-label={shellCopy.zh.langLabel}>
+					<button type="button" data-lang="zh" aria-pressed="true">中文</button>
+					<button type="button" data-lang="en" aria-pressed="false">EN</button>
+				</div>
+			</nav>
+		</header>
+
+		<slot />
+
+		<script>
+			const buttons =
+				document.querySelectorAll<HTMLButtonElement>(".lang-switch button");
+
+			const applyLang = (lang: string) => {
+				const next = lang === "en" ? "en" : "zh";
+				document.documentElement.lang = next === "zh" ? "zh-CN" : "en";
+				document.documentElement.dataset.lang = next;
+				localStorage.setItem("site-lang", next);
+
+				for (const button of buttons) {
+					button.setAttribute(
+						"aria-pressed",
+						String(button.dataset.lang === next),
+					);
+				}
+
+				const titleEl = document.querySelector("title");
+				if (titleEl instanceof HTMLTitleElement) {
+					const value =
+						next === "en"
+							? titleEl.dataset.titleEn
+							: titleEl.dataset.titleZh;
+					if (value) titleEl.textContent = value;
+				}
+
+				const descEl = document.querySelector('meta[name="description"]');
+				if (descEl instanceof HTMLMetaElement) {
+					const value =
+						next === "en" ? descEl.dataset.descEn : descEl.dataset.descZh;
+					if (value) descEl.setAttribute("content", value);
+				}
+
+				const nav = document.querySelector("nav.nav-shell");
+				if (nav) {
+					nav.setAttribute(
+						"aria-label",
+						next === "en" ? "Main navigation" : "主导航",
+					);
+				}
+				const brand = document.querySelector(".brand");
+				if (brand) {
+					brand.setAttribute(
+						"aria-label",
+						next === "en" ? "Back to home" : "回到首页",
+					);
+				}
+				const langSwitch = document.querySelector(".lang-switch");
+				if (langSwitch) {
+					langSwitch.setAttribute(
+						"aria-label",
+						next === "en" ? "Language" : "语言切换",
+					);
+				}
+
+				for (const img of document.querySelectorAll<HTMLImageElement>(
+					"img[data-alt-zh]",
+				)) {
+					const value =
+						next === "en" ? img.dataset.altEn : img.dataset.altZh;
+					if (value) img.alt = value;
+				}
+			};
+
+			applyLang(localStorage.getItem("site-lang") ?? "zh");
+
+			for (const button of buttons) {
+				button.addEventListener("click", () => {
+					applyLang(button.dataset.lang ?? "zh");
+				});
+			}
+		</script>
+
+		<footer class="page-shell">
+			<p class="footer-brand">CHEN WANG · 2026</p>
+			<p class="footer-quote">
+				<span class="i18n-zh">{footerQuote.zh}</span>
+				<span class="i18n-en">{footerQuote.en}</span>
+			</p>
+		</footer>
+	</body>
+</html>
+
+<style>
+	.site-header {
+		position: sticky;
+		z-index: 10;
+		top: 0;
+		height: 64px;
+		background: color-mix(in srgb, var(--color-paper-white) 88%, transparent);
+		backdrop-filter: blur(20px);
+	}
+
+	.nav-shell {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		height: 100%;
+		text-transform: uppercase;
+	}
+
+	.brand,
+	.footer-brand {
+		margin: 0;
+		font-family: var(--font-geist-mono);
+		font-size: 14px;
+		font-weight: var(--font-weight-regular);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	.footer-brand {
+		font-size: var(--text-eyebrow);
+		color: var(--color-stone);
+	}
+
+	.brand,
+	.nav-tabs a {
+		text-decoration: none;
+	}
+
+	.nav-tabs {
+		display: flex;
+		gap: var(--spacing-24);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-caption);
+		font-weight: var(--font-weight-regular);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+	}
+
+	.nav-tabs a {
+		color: var(--color-slate);
+	}
+
+	.nav-tabs a[aria-current="page"] {
+		color: var(--color-obsidian);
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 6px;
+	}
+
+	.lang-switch {
+		justify-self: end;
+		display: inline-flex;
+		padding: 2px;
+		border-radius: var(--radius-pill);
+		background: var(--color-pure-white);
+		box-shadow: var(--shadow-hairline);
+	}
+
+	.lang-switch button {
+		height: 28px;
+		padding-inline: var(--spacing-12);
+		border: 0;
+		border-radius: var(--radius-pill);
+		background: transparent;
+		color: var(--color-stone);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-eyebrow);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	.lang-switch button[aria-pressed="true"] {
+		background: var(--color-obsidian);
+		color: var(--color-pure-white);
+	}
+
+	footer {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		padding-block: var(--spacing-40);
+		color: var(--color-stone);
+		font-size: var(--text-caption);
+	}
+
+	footer p {
+		margin: 0;
+	}
+
+	.footer-quote {
+		font-family: var(--font-wenkai);
+		font-size: 14px;
+	}
+
+	@media (hover: hover) {
+		.nav-tabs a,
+		.lang-switch button {
+			transition: color 160ms ease;
+		}
+
+		.nav-tabs a:hover {
+			color: var(--color-stone);
+		}
+
+		.lang-switch button:not([aria-pressed="true"]):hover {
+			color: var(--color-obsidian);
+		}
+	}
+
+	@media (max-width: 680px) {
+		.site-header {
+			height: auto;
+		}
+
+		.nav-shell {
+			grid-template-columns: 1fr auto;
+			row-gap: var(--spacing-8);
+			padding-block: var(--spacing-12);
+		}
+
+		.nav-tabs {
+			grid-column: 1 / -1;
+			grid-row: 2;
+			overflow-x: auto;
+		}
+
+		footer {
+			grid-template-columns: 1fr;
+			gap: var(--spacing-16);
+		}
+	}
+</style>

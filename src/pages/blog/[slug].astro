@@ -1,0 +1,47 @@
+---
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import Base from "../../layouts/Base.astro";
+import BlogArticle from "../../components/BlogArticle.astro";
+import posts from "../../data/blog-posts.json";
+import { withBaseInHtml } from "../../lib/base";
+
+export function getStaticPaths() {
+	return posts.map((post) => ({
+		params: { slug: post.slug },
+		props: { post },
+	}));
+}
+
+const { post } = Astro.props;
+const bodyPath = join(process.cwd(), "src/data", post.bodyPath);
+let bodyHtml = "";
+try {
+	bodyHtml = readFileSync(bodyPath, "utf8");
+} catch {
+	bodyHtml = `<p>${post.description}</p>`;
+}
+
+// Lead is shown in the header; avoid duplicating the first blockquote in body.
+if (post.lead) {
+	bodyHtml = bodyHtml.replace(
+		/<blockquote>\s*<p>\s*[\s\S]*?<\/p>\s*<\/blockquote>/i,
+		"",
+	);
+}
+
+bodyHtml = withBaseInHtml(bodyHtml);
+---
+
+<Base
+	title={`${post.title}｜Chen Wang`}
+	description={post.description}
+	active="blog"
+>
+	<BlogArticle
+		title={post.title}
+		date={post.date}
+		lead={post.lead || ""}
+		bodyHtml={bodyHtml}
+	/>
+</Base>

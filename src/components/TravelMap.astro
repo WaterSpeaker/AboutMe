@@ -1,0 +1,312 @@
+---
+---
+
+<div class="travel-map-shell">
+	<div id="travel-map" class="travel-map" role="img" aria-label="可缩放的世界旅行地图"></div>
+</div>
+
+<script>
+	import cities from "../data/travel-cities.json";
+	import { initTravelMap } from "../scripts/travel-map";
+
+	const teardown = initTravelMap("travel-map", cities);
+
+	document.addEventListener(
+		"astro:before-swap",
+		() => {
+			teardown();
+		},
+		{ once: true },
+	);
+</script>
+
+<style>
+	.travel-map-shell {
+		position: relative;
+		width: 100%;
+		overflow: visible;
+	}
+
+	.travel-map {
+		width: 100%;
+		height: clamp(400px, 65vh, 720px);
+		border: 1px solid var(--color-hairline);
+		border-radius: var(--radius-card);
+		overflow: visible;
+		background: var(--color-paper-white);
+	}
+
+	.travel-map-shell :global(.maplibregl-canvas-container) {
+		border-radius: var(--radius-card);
+		overflow: hidden;
+	}
+
+	.travel-map-shell :global(.travel-city-popup) {
+		z-index: 5;
+	}
+
+	.travel-map-shell :global(.travel-city-popup--auto) {
+		z-index: 4;
+		pointer-events: auto;
+	}
+
+	.travel-map-shell :global(.maplibregl-ctrl-group) {
+		border-radius: var(--radius-button);
+		box-shadow: var(--shadow-hairline);
+	}
+
+	.travel-map-shell :global(.maplibregl-ctrl-group button) {
+		width: 36px;
+		height: 36px;
+	}
+
+	.travel-map-shell :global(.travel-city-popup .maplibregl-popup-content) {
+		padding: 0;
+		border: 0;
+		border-radius: var(--radius-card);
+		background: transparent;
+		box-shadow: none;
+		opacity: 0;
+		transform: translateY(10px) scale(0.96);
+		transition:
+			opacity 380ms ease,
+			transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+		will-change: opacity, transform;
+	}
+
+	.travel-map-shell :global(.travel-city-popup.travel-city-popup--side-right .maplibregl-popup-content) {
+		transform: translate(-12px, 8px) scale(0.96);
+	}
+
+	.travel-map-shell :global(.travel-city-popup.travel-city-popup--side-left .maplibregl-popup-content) {
+		transform: translate(12px, 8px) scale(0.96);
+	}
+
+	.travel-map-shell :global(.travel-city-popup.is-visible .maplibregl-popup-content) {
+		opacity: 1;
+		transform: translate(0, 0) scale(1);
+	}
+
+	.travel-map-shell :global(.travel-city-popup.is-leaving) {
+		pointer-events: none;
+	}
+
+	.travel-map-shell :global(.travel-city-popup.is-leaving .maplibregl-popup-content) {
+		opacity: 0;
+		transform: translateY(8px) scale(0.97);
+	}
+
+	.travel-map-shell :global(.travel-city-popup.is-leaving.travel-city-popup--side-right .maplibregl-popup-content) {
+		transform: translate(-10px, 6px) scale(0.97);
+	}
+
+	.travel-map-shell :global(.travel-city-popup.is-leaving.travel-city-popup--side-left .maplibregl-popup-content) {
+		transform: translate(10px, 6px) scale(0.97);
+	}
+
+	.travel-map-shell :global(.travel-city-popup .maplibregl-popup-tip) {
+		display: none;
+	}
+
+	.travel-map-shell :global(.travel-city-card) {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		min-width: 260px;
+		max-width: 320px;
+		max-height: var(--travel-popup-max-height, 420px);
+		padding: var(--spacing-16);
+		border-radius: var(--radius-card);
+		background: var(--color-pure-white);
+		box-shadow: 0 0 0 1px var(--color-hairline);
+		overflow-x: hidden;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		transition:
+			transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+			box-shadow 220ms ease;
+	}
+
+	.travel-map-shell :global(.travel-city-popup--side-right .travel-city-card::before),
+	.travel-map-shell :global(.travel-city-popup--side-right .travel-city-card::after),
+	.travel-map-shell :global(.travel-city-popup--side-left .travel-city-card::before),
+	.travel-map-shell :global(.travel-city-popup--side-left .travel-city-card::after) {
+		content: "";
+		position: absolute;
+		top: 50%;
+		width: 0;
+		height: 0;
+		pointer-events: none;
+		transform: translateY(-50%);
+	}
+
+	.travel-map-shell :global(.travel-city-popup--side-right .travel-city-card::before) {
+		left: -10px;
+		border-top: 9px solid transparent;
+		border-bottom: 9px solid transparent;
+		border-right: 10px solid var(--color-hairline);
+	}
+
+	.travel-map-shell :global(.travel-city-popup--side-right .travel-city-card::after) {
+		left: -8px;
+		border-top: 8px solid transparent;
+		border-bottom: 8px solid transparent;
+		border-right: 8px solid var(--color-pure-white);
+	}
+
+	.travel-map-shell :global(.travel-city-popup--side-left .travel-city-card::before) {
+		right: -10px;
+		border-top: 9px solid transparent;
+		border-bottom: 9px solid transparent;
+		border-left: 10px solid var(--color-hairline);
+	}
+
+	.travel-map-shell :global(.travel-city-popup--side-left .travel-city-card::after) {
+		right: -8px;
+		border-top: 8px solid transparent;
+		border-bottom: 8px solid transparent;
+		border-left: 8px solid var(--color-pure-white);
+	}
+
+	.travel-map-shell :global(.travel-city-popup.is-visible .travel-city-card) {
+		animation: travel-card-enter 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	.travel-map-shell :global(.travel-city-popup.is-leaving .travel-city-card) {
+		animation: none;
+	}
+
+	.travel-map-shell :global(.travel-city-popup.is-visible .travel-city-card:hover) {
+		transform: translateY(-4px);
+		box-shadow:
+			0 0 0 1px var(--color-hairline),
+			0 14px 36px rgb(0 0 0 / 10%);
+	}
+
+	@keyframes travel-card-enter {
+		from {
+			opacity: 0.9;
+			transform: translateY(8px) scale(0.985);
+		}
+
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
+
+	.travel-map-shell :global(.travel-city-card__visual) {
+		display: grid;
+		overflow: hidden;
+		min-height: 140px;
+		max-height: 180px;
+		place-items: center;
+		margin-bottom: var(--spacing-20);
+		border-radius: var(--radius-card);
+		background: var(--color-paper-white);
+		box-shadow: var(--shadow-hairline);
+	}
+
+	.travel-map-shell :global(.travel-city-card__image) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		min-height: 140px;
+		max-height: 180px;
+		object-fit: cover;
+	}
+
+	.travel-map-shell :global(.travel-city-card__copy) {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.travel-map-shell :global(.travel-city-card__title) {
+		margin: 0 0 var(--spacing-8);
+		font-family: var(--font-source-han-serif);
+		font-size: clamp(16px, 1.6vw, 18px);
+		font-weight: 600;
+		line-height: 1.5;
+		letter-spacing: 0.01em;
+		color: var(--color-obsidian);
+	}
+
+	.travel-map-shell :global(.travel-city-card__desc) {
+		display: -webkit-box;
+		overflow: hidden;
+		margin: 0 0 var(--spacing-16);
+		color: var(--color-stone);
+		font-family: var(--font-geist-sans);
+		font-size: var(--text-caption);
+		line-height: 1.8;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 4;
+	}
+
+	.travel-map-shell :global(.travel-city-card__link) {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-8);
+		width: fit-content;
+		margin-top: auto;
+		color: var(--color-obsidian);
+		font-size: var(--text-caption);
+		text-decoration: none;
+		transition: color 160ms ease;
+	}
+
+	.travel-map-shell :global(.travel-city-card__link:hover) {
+		color: var(--color-carbon);
+	}
+
+	.travel-map-shell :global(.travel-city-card__link-text) {
+		text-decoration: underline;
+		text-decoration-color: var(--color-ash);
+		text-underline-offset: 3px;
+		transition: text-decoration-color 160ms ease;
+	}
+
+	.travel-map-shell :global(.travel-city-card__link:hover .travel-city-card__link-text) {
+		text-decoration-color: var(--color-obsidian);
+	}
+
+	.travel-map-shell :global(.travel-city-card__link-icon) {
+		display: inline-flex;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		width: 24px;
+		height: 24px;
+		border-radius: var(--radius-pill);
+		color: var(--color-obsidian);
+		box-shadow: 0 0 0 1px var(--color-ash);
+		line-height: 0;
+		transition:
+			color 160ms ease,
+			box-shadow 160ms ease;
+	}
+
+	.travel-map-shell :global(.travel-city-card__link-icon svg) {
+		display: block;
+	}
+
+	.travel-map-shell :global(.travel-city-card__link:hover .travel-city-card__link-icon) {
+		color: var(--color-carbon);
+		box-shadow: 0 0 0 1px var(--color-smoke);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.travel-map-shell :global(.travel-city-popup .maplibregl-popup-content),
+		.travel-map-shell :global(.travel-city-card) {
+			transition: none;
+			animation: none;
+		}
+	}
+
+	.travel-map-shell :global(.maplibregl-ctrl-attrib) {
+		z-index: 1;
+		font-size: 10px;
+		color: var(--color-smoke);
+		background: rgb(250 250 250 / 85%);
+	}
+</style>

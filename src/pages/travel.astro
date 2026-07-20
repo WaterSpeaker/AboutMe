@@ -1,0 +1,379 @@
+---
+import Base from "../layouts/Base.astro";
+import TravelMap from "../components/TravelMap.astro";
+
+const wishList = [
+	"南极",
+	"墨西哥",
+	"秘鲁",
+	"西澳",
+	"加拉帕戈斯",
+	"法罗群岛",
+];
+---
+
+<Base
+	title="Chen Wang｜Travel"
+	description="The world's mine oyster, which I with sword will open."
+	active="travel"
+>
+	<main class="page-shell">
+		<section class="hero" aria-labelledby="page-title">
+			<div class="hero-backdrop" aria-hidden="true">
+				<span class="hero-ring hero-ring--outer"></span>
+				<span class="hero-ring hero-ring--inner"></span>
+				<span class="hero-square"></span>
+				<span class="hero-line hero-line--horizontal"></span>
+				<span class="hero-line hero-line--vertical"></span>
+				<span class="hero-dot hero-dot--one"></span>
+				<span class="hero-dot hero-dot--two"></span>
+				<span class="hero-label hero-label--north">48°N</span>
+				<span class="hero-label hero-label--east">12°E</span>
+			</div>
+
+			<h1 id="page-title" class="quote">
+				<span class="quote-line">The world's mine oyster,</span>
+				<span class="quote-line">which I with sword will open.</span>
+			</h1>
+		</section>
+
+		<section class="map-section" aria-label="世界地图">
+			<TravelMap />
+		</section>
+
+		<section class="next-places" id="wishlist" aria-labelledby="wishlist-title">
+			<div class="next-places__wishlist">
+				<p class="eyebrow">TOP WISH LIST</p>
+				<h2 id="wishlist-title">心向往之</h2>
+				<ol class="wishlist-list">
+					{wishList.map((place, index) => (
+						<li>
+							<span class="wishlist-index">{String(index + 1).padStart(2, "0")}</span>
+							<span class="wishlist-name">{place}</span>
+						</li>
+					))}
+				</ol>
+			</div>
+
+			<div class="next-places__recommend" id="recommend" aria-labelledby="recommend-title">
+				<p class="eyebrow">RECOMMEND A PLACE</p>
+				<h2 id="recommend-title">给我推荐目的地</h2>
+				<p class="recommend-copy">下一个旅行目的地由你决定！</p>
+				<a
+					class="recommend-cta"
+					href="https://my.feishu.cn/share/base/form/shrcnWxWIR9duq8i3BtpFKpN9Gd"
+					target="_blank"
+					rel="noreferrer"
+				>
+					提交推荐 <span aria-hidden="true">↗</span>
+				</a>
+			</div>
+		</section>
+	</main>
+</Base>
+
+<style>
+	.hero {
+		position: relative;
+		isolation: isolate;
+		overflow: hidden;
+		padding-block: 96px 48px;
+		--hero-ornament-offset: 56px;
+	}
+
+	.hero-backdrop {
+		position: absolute;
+		top: var(--hero-ornament-offset);
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	.hero-ring,
+	.hero-square,
+	.hero-line,
+	.hero-dot,
+	.hero-label {
+		position: absolute;
+	}
+
+	.hero-ring--outer {
+		top: 58%;
+		right: -6%;
+		width: clamp(300px, 44vw, 560px);
+		aspect-ratio: 1;
+		border: 1px solid var(--color-hairline);
+		border-radius: 50%;
+		transform: translateY(-50%);
+	}
+
+	.hero-ring--inner {
+		top: 58%;
+		right: 6%;
+		width: clamp(180px, 26vw, 320px);
+		aspect-ratio: 1;
+		border: 1px solid color-mix(in srgb, var(--color-ash) 55%, transparent);
+		border-radius: 50%;
+		transform: translateY(-50%);
+	}
+
+	.hero-square {
+		top: 26%;
+		right: 22%;
+		width: clamp(72px, 10vw, 120px);
+		aspect-ratio: 1;
+		border: 1px solid color-mix(in srgb, var(--color-ash) 45%, transparent);
+	}
+
+	.hero-line--horizontal {
+		top: 62%;
+		right: 0;
+		left: 42%;
+		height: 1px;
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			var(--color-hairline) 18%,
+			var(--color-hairline) 82%,
+			transparent 100%
+		);
+	}
+
+	.hero-line--vertical {
+		top: 16%;
+		bottom: 8%;
+		right: 28%;
+		width: 1px;
+		background: linear-gradient(
+			180deg,
+			transparent 0%,
+			var(--color-hairline) 20%,
+			var(--color-hairline) 80%,
+			transparent 100%
+		);
+	}
+
+	.hero-dot--one,
+	.hero-dot--two {
+		width: 6px;
+		height: 6px;
+		border: 1px solid var(--color-ash);
+		border-radius: 50%;
+		background: var(--color-paper-white);
+	}
+
+	.hero-dot--one {
+		top: 61%;
+		right: 27.8%;
+	}
+
+	.hero-dot--two {
+		top: 36%;
+		right: 21.8%;
+	}
+
+	.hero-label {
+		color: var(--color-smoke);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-eyebrow);
+		letter-spacing: var(--tracking-label);
+		text-transform: uppercase;
+	}
+
+	.hero-label--north {
+		top: 22%;
+		right: 30%;
+	}
+
+	.hero-label--east {
+		right: 8%;
+		bottom: 18%;
+	}
+
+	.quote {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.12em;
+		margin: 0;
+		width: max-content;
+		max-width: 100%;
+		color: var(--color-obsidian);
+		font-family: var(--font-source-han-serif);
+		font-size: clamp(36px, 5.2vw, 60px);
+		font-weight: 500;
+		line-height: 1.35;
+		letter-spacing: -0.02em;
+	}
+
+	.quote-line {
+		white-space: nowrap;
+	}
+
+	.map-section {
+		padding-bottom: var(--spacing-section);
+	}
+
+	.next-places {
+		display: grid;
+		grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.85fr);
+		gap: clamp(var(--spacing-32), 5vw, 72px);
+		margin-bottom: var(--spacing-section);
+		padding: clamp(var(--spacing-32), 6vw, 80px);
+		border-radius: var(--radius-card);
+		color: var(--color-pure-white);
+		background: var(--color-obsidian);
+	}
+
+	.next-places .eyebrow {
+		color: var(--color-smoke);
+	}
+
+	.next-places h2 {
+		margin: 0;
+		color: var(--color-pure-white);
+		font-size: clamp(30px, 3.8vw, 44px);
+		font-weight: 700;
+		line-height: 1.2;
+		letter-spacing: 0.02em;
+	}
+
+	.wishlist-list {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: var(--spacing-16) var(--spacing-32);
+		margin: var(--spacing-32) 0 0;
+		padding: var(--spacing-32) 0 0;
+		list-style: none;
+		border-top: 1px solid rgb(255 255 255 / 12%);
+	}
+
+	.wishlist-list li {
+		display: flex;
+		align-items: baseline;
+		gap: var(--spacing-12);
+		min-width: 0;
+	}
+
+	.wishlist-index {
+		flex-shrink: 0;
+		color: var(--color-smoke);
+		font-family: var(--font-geist-mono);
+		font-size: var(--text-eyebrow);
+		letter-spacing: var(--tracking-label);
+	}
+
+	.wishlist-name {
+		font-family: var(--font-source-han-serif);
+		font-size: clamp(18px, 1.8vw, 22px);
+		font-weight: 600;
+		line-height: 1.4;
+		letter-spacing: 0.02em;
+	}
+
+	.next-places__recommend {
+		display: flex;
+		flex-direction: column;
+		align-self: stretch;
+		padding-left: clamp(var(--spacing-24), 4vw, 48px);
+		border-left: 1px solid rgb(255 255 255 / 12%);
+	}
+
+	.recommend-copy {
+		max-width: 360px;
+		margin: var(--spacing-20) 0 auto;
+		color: var(--color-ash);
+		line-height: 1.8;
+	}
+
+	.recommend-cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--spacing-12);
+		width: fit-content;
+		height: var(--button-height);
+		margin-top: var(--spacing-32);
+		padding-inline: var(--spacing-20);
+		border: 0;
+		border-radius: var(--radius-button);
+		color: var(--color-obsidian);
+		background: var(--color-pure-white);
+		font-size: 14px;
+		font-weight: var(--font-weight-regular);
+		text-decoration: none;
+	}
+
+	.recommend-cta span {
+		font-family: var(--font-geist-mono);
+	}
+
+	@media (hover: hover) {
+		.recommend-cta {
+			transition:
+				transform 160ms ease,
+				opacity 160ms ease;
+		}
+
+		.recommend-cta:hover {
+			transform: translateY(-1px);
+			opacity: 0.88;
+		}
+	}
+
+	@media (max-width: 800px) {
+		.next-places {
+			grid-template-columns: 1fr;
+			gap: var(--spacing-40);
+		}
+
+		.next-places__recommend {
+			padding-top: var(--spacing-40);
+			padding-left: 0;
+			border-top: 1px solid rgb(255 255 255 / 12%);
+			border-left: 0;
+		}
+
+		.recommend-copy {
+			margin-bottom: 0;
+		}
+	}
+
+	@media (max-width: 520px) {
+		.wishlist-list {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 720px) {
+		.hero {
+			padding-block: 64px 32px;
+			--hero-ornament-offset: 40px;
+		}
+
+		.hero-ring--outer {
+			right: -28%;
+			width: 72vw;
+			opacity: 0.7;
+		}
+
+		.hero-ring--inner,
+		.hero-square,
+		.hero-line--vertical,
+		.hero-label--north {
+			display: none;
+		}
+
+		.hero-line--horizontal {
+			left: 18%;
+		}
+
+		.quote {
+			font-size: clamp(24px, 6.5vw, 42px);
+		}
+	}
+</style>
