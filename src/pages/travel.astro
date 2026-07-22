@@ -18,17 +18,17 @@ const wishList = [
 	active="travel"
 >
 	<main class="page-shell">
-		<section class="hero" aria-labelledby="page-title">
+		<section class="hero" aria-labelledby="page-title" data-hero-scope>
 			<div class="hero-backdrop" aria-hidden="true">
 				<span class="hero-ring hero-ring--outer"></span>
 				<span class="hero-ring hero-ring--inner"></span>
 				<span class="hero-square"></span>
 				<span class="hero-line hero-line--horizontal"></span>
 				<span class="hero-line hero-line--vertical"></span>
-				<span class="hero-dot hero-dot--one"></span>
+				<span class="hero-dot hero-dot--focus"></span>
 				<span class="hero-dot hero-dot--two"></span>
-				<span class="hero-label hero-label--north">48°N</span>
-				<span class="hero-label hero-label--east">12°E</span>
+				<span class="hero-label hero-label--north" data-hero-lat>48°N</span>
+				<span class="hero-label hero-label--east" data-hero-lon>12°E</span>
 			</div>
 
 			<h1 id="page-title" class="quote">
@@ -72,6 +72,13 @@ const wishList = [
 	</main>
 </Base>
 
+<script>
+	import { initHeroScope } from "../scripts/hero-scope";
+
+	const hero = document.querySelector<HTMLElement>("[data-hero-scope]");
+	if (hero) initHeroScope(hero);
+</script>
+
 <style>
 	.hero {
 		position: relative;
@@ -79,6 +86,8 @@ const wishList = [
 		overflow: hidden;
 		padding-block: 96px 48px;
 		--hero-ornament-offset: 56px;
+		--focus-x: 72%;
+		--focus-y: 62%;
 	}
 
 	.hero-backdrop {
@@ -120,15 +129,22 @@ const wishList = [
 	}
 
 	.hero-square {
-		top: 26%;
-		right: 22%;
+		top: calc(var(--focus-y) - clamp(36px, 5vw, 60px));
+		left: calc(var(--focus-x) - clamp(36px, 5vw, 60px));
 		width: clamp(72px, 10vw, 120px);
 		aspect-ratio: 1;
 		border: 1px solid color-mix(in srgb, var(--color-ash) 45%, transparent);
+		transition:
+			border-color 280ms ease,
+			opacity 280ms ease;
+	}
+
+	.hero.is-tracking .hero-square {
+		border-color: color-mix(in srgb, var(--color-ash) 70%, transparent);
 	}
 
 	.hero-line--horizontal {
-		top: 62%;
+		top: var(--focus-y);
 		right: 0;
 		left: 42%;
 		height: 1px;
@@ -144,7 +160,7 @@ const wishList = [
 	.hero-line--vertical {
 		top: 16%;
 		bottom: 8%;
-		right: 28%;
+		left: var(--focus-x);
 		width: 1px;
 		background: linear-gradient(
 			180deg,
@@ -155,7 +171,7 @@ const wishList = [
 		);
 	}
 
-	.hero-dot--one,
+	.hero-dot--focus,
 	.hero-dot--two {
 		width: 6px;
 		height: 6px;
@@ -164,9 +180,22 @@ const wishList = [
 		background: var(--color-paper-white);
 	}
 
-	.hero-dot--one {
-		top: 61%;
-		right: 27.8%;
+	.hero-dot--focus {
+		top: var(--focus-y);
+		left: var(--focus-x);
+		z-index: 1;
+		transform: translate(-50%, -50%);
+		box-shadow: 0 0 0 0 transparent;
+		transition:
+			border-color 220ms ease,
+			background-color 220ms ease,
+			box-shadow 220ms ease;
+	}
+
+	.hero.is-tracking .hero-dot--focus {
+		border-color: var(--color-obsidian);
+		background: var(--color-obsidian);
+		box-shadow: 0 0 0 4px rgb(0 0 0 / 6%);
 	}
 
 	.hero-dot--two {
@@ -180,16 +209,24 @@ const wishList = [
 		font-size: var(--text-eyebrow);
 		letter-spacing: var(--tracking-label);
 		text-transform: uppercase;
+		font-variant-numeric: tabular-nums;
+		transition: color 220ms ease;
 	}
 
 	.hero-label--north {
-		top: 22%;
-		right: 30%;
+		top: 18%;
+		left: var(--focus-x);
+		transform: translateX(calc(-100% - 10px));
 	}
 
 	.hero-label--east {
+		top: var(--focus-y);
 		right: 8%;
-		bottom: 18%;
+		transform: translateY(10px);
+	}
+
+	.hero.is-tracking .hero-label {
+		color: var(--color-carbon);
 	}
 
 	.quote {
@@ -364,7 +401,9 @@ const wishList = [
 		.hero-ring--inner,
 		.hero-square,
 		.hero-line--vertical,
-		.hero-label--north {
+		.hero-label--north,
+		.hero-dot--focus,
+		.hero-dot--two {
 			display: none;
 		}
 
@@ -374,6 +413,14 @@ const wishList = [
 
 		.quote {
 			font-size: clamp(24px, 6.5vw, 42px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-square,
+		.hero-dot--focus,
+		.hero-label {
+			transition: none;
 		}
 	}
 </style>

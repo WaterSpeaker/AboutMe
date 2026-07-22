@@ -2,6 +2,8 @@
 import Base from "../layouts/Base.astro";
 import { withBase } from "../lib/base";
 
+const digital7Url = withBase("/fonts/digital-7-mono.ttf");
+
 // 数据来源：飞书多维表格「越野跑记录」，照片已下载到 public/trail-run/
 const races = [
 	{
@@ -13,40 +15,40 @@ const races = [
 		photo: null,
 	},
 	{
-		name: "Outopia 好野姐妹莫干山",
+		name: "Outopia 好野姐妹莫干山 · 夏季赛",
 		date: "2026-05-24",
 		distance: "18.3K",
 		elevation: "累计爬升 1252M",
 		result: "03:35:50",
 		photo: {
 			src: withBase("/trail-run/outopia-moganshan/01.jpg"),
-			alt: "完赛照：Outopia 好野姐妹莫干山",
+			alt: "完赛照：Outopia 好野姐妹莫干山 · 夏季赛",
 		},
 	},
 	{
-		name: "抱佛脚",
+		name: "Outopia 抱佛脚跑山赛",
 		date: "2026-04-12",
 		distance: "20K",
 		elevation: "累计爬升 800+",
 		result: "03:08:13",
 		photo: {
 			src: withBase("/trail-run/baofojiao/01.jpg"),
-			alt: "完赛照：抱佛脚越野赛",
+			alt: "完赛照：Outopia 抱佛脚跑山赛",
 		},
 	},
 	{
-		name: "2026黄山徽州古城环新安江百公里越野赛",
+		name: "黄山徽州古城环新安江百公里越野赛",
 		date: "2026-10-31",
 		distance: "41.2K",
 		elevation: "累计爬升 1700M",
 		result: null,
 		photo: {
 			src: withBase("/trail-run/huangshan-100k/01.png"),
-			alt: "赛事海报：2026黄山徽州古城环新安江百公里越野赛",
+			alt: "赛事海报：黄山徽州古城环新安江百公里越野赛",
 		},
 	},
 	{
-		name: "杭州斯巴达勇士赛",
+		name: "莫干山斯巴达勇士赛",
 		date: "2026-11-07",
 		distance: null,
 		elevation: null,
@@ -121,9 +123,11 @@ const goals = [
 								{race.upcoming ? (
 									<p class="race-upcoming">UPCOMING</p>
 								) : (
-									<p class="race-result" aria-label="成绩">
+									<p class="race-result" aria-label={`成绩 ${race.result}`}>
 										<span class="race-result__label">FINISH</span>
-										<span class="race-result__time">{race.result}</span>
+										<span class="race-result__time" data-result={race.result}>
+											<span class="t-reel" aria-hidden="true"></span>
+										</span>
 									</p>
 								)}
 							</div>
@@ -182,6 +186,30 @@ const goals = [
 		</section>
 	</main>
 </Base>
+
+<style is:inline set:html={`
+	@font-face {
+		font-family: "Digital-7";
+		src: url("${digital7Url}") format("truetype");
+		font-weight: 400;
+		font-style: normal;
+		font-display: swap;
+	}
+`} />
+
+<script>
+	import { initSpinningReels } from "../scripts/spinning-reel";
+
+	const teardown = initSpinningReels();
+
+	document.addEventListener(
+		"astro:before-swap",
+		() => {
+			teardown();
+		},
+		{ once: true },
+	);
+</script>
 
 <style>
 	.hero {
@@ -445,13 +473,83 @@ const goals = [
 	}
 
 	.race-result__time {
+		--reel-dur: 1400ms;
+		--reel-cell: 1em;
+		--reel-spin-blur: 3px;
+		--reel-stagger: 90ms;
+		--reel-ease: cubic-bezier(0.16, 1, 0.3, 1);
+		display: inline-flex;
 		color: var(--color-stone);
-		font-family: var(--font-geist-mono);
-		font-size: clamp(22px, 2.4vw, 30px);
+		font-family: var(--font-digital-7);
+		font-size: clamp(32px, 3.6vw, 44px);
 		font-weight: var(--font-weight-regular);
 		line-height: 1;
-		letter-spacing: -0.02em;
+		letter-spacing: -0.06em;
 		font-variant-numeric: tabular-nums;
+		transition: color 180ms ease;
+		cursor: default;
+	}
+
+	.race-result__time :global(.t-reel) {
+		display: inline-flex;
+		align-items: center;
+		height: var(--reel-cell);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.race-result__time :global(.t-reel-col) {
+		position: relative;
+		width: 0.58em;
+		height: var(--reel-cell);
+		overflow: hidden;
+		-webkit-mask-image: linear-gradient(
+			to bottom,
+			transparent 0%,
+			#000 22%,
+			#000 78%,
+			transparent 100%
+		);
+		mask-image: linear-gradient(
+			to bottom,
+			transparent 0%,
+			#000 22%,
+			#000 78%,
+			transparent 100%
+		);
+	}
+
+	.race-result__time :global(.t-reel-strip) {
+		display: flex;
+		flex-direction: column;
+		will-change: transform, filter;
+	}
+
+	.race-result__time :global(.t-reel-digit) {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: var(--reel-cell);
+	}
+
+	.race-result__time :global(.t-reel-sep) {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 0.28em;
+		height: var(--reel-cell);
+	}
+
+	@media (hover: hover) {
+		.race-result__time:hover {
+			color: var(--color-signal-red);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.race-result__time :global(.t-reel-strip) {
+			transition: none !important;
+			filter: none !important;
+		}
 	}
 
 	.race-upcoming {

@@ -19,6 +19,7 @@
 	--color-obsidian: #171717;
 	--color-carbon: #000000;
 	--color-terminal-green: #297a3a;
+	--color-signal-red: #e10600;
 
 	/* Typography tokens
 	   黑体正文：Geist（西文）+ 思源黑体（中文）
@@ -28,6 +29,7 @@
 		"PingFang SC", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
 	--font-geist-mono: "Geist Mono Variable", "Geist Mono", "SFMono-Regular",
 		Consolas, "Liberation Mono", monospace;
+	--font-digital-7: "Digital-7", "Geist Mono Variable", ui-monospace, monospace;
 	--font-source-han-serif: "Noto Serif SC Variable", "Source Han Serif SC",
 		"Noto Serif SC", "Songti SC", serif;
 	--font-wenkai: "LXGW WenKai", "Kaiti SC", "STKaiti", "KaiTi", serif;

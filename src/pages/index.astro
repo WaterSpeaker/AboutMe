@@ -320,6 +320,7 @@ const displayColumns = photoColumns.map((column, columnIndex) => {
 			arc-in 700ms ease forwards,
 			arc-spin 12s linear 700ms infinite;
 		will-change: transform;
+		z-index: 1;
 	}
 
 	.hero-arc--outer {
@@ -342,7 +343,7 @@ const displayColumns = photoColumns.map((column, columnIndex) => {
 			arc-spin-reverse 8s linear 820ms infinite;
 	}
 
-	/* 声波条：一段静止的音频波形 */
+	/* 声波条：上下律动，像简易电平表 */
 	.hero-wave {
 		position: absolute;
 		top: 24%;
@@ -357,17 +358,74 @@ const displayColumns = photoColumns.map((column, columnIndex) => {
 	.hero-wave i {
 		width: 1px;
 		background: var(--color-ash);
+		transform-origin: center;
+		animation: wave-pulse 4s ease-in-out infinite;
 	}
 
-	.hero-wave i:nth-child(1) { height: 24%; }
-	.hero-wave i:nth-child(2) { height: 52%; }
-	.hero-wave i:nth-child(3) { height: 36%; }
-	.hero-wave i:nth-child(4) { height: 88%; }
-	.hero-wave i:nth-child(5) { height: 60%; }
-	.hero-wave i:nth-child(6) { height: 100%; }
-	.hero-wave i:nth-child(7) { height: 44%; }
-	.hero-wave i:nth-child(8) { height: 68%; }
-	.hero-wave i:nth-child(9) { height: 30%; }
+	.hero-wave i:nth-child(1) {
+		height: 24%;
+		animation-delay: 0ms;
+		--wave-min: 0.45;
+		--wave-max: 1.15;
+	}
+	.hero-wave i:nth-child(2) {
+		height: 52%;
+		animation-delay: 90ms;
+		--wave-min: 0.55;
+		--wave-max: 1.2;
+	}
+	.hero-wave i:nth-child(3) {
+		height: 36%;
+		animation-delay: 180ms;
+		--wave-min: 0.5;
+		--wave-max: 1.25;
+	}
+	.hero-wave i:nth-child(4) {
+		height: 88%;
+		animation-delay: 40ms;
+		--wave-min: 0.6;
+		--wave-max: 1.1;
+	}
+	.hero-wave i:nth-child(5) {
+		height: 60%;
+		animation-delay: 140ms;
+		--wave-min: 0.5;
+		--wave-max: 1.22;
+	}
+	.hero-wave i:nth-child(6) {
+		height: 100%;
+		animation-delay: 220ms;
+		--wave-min: 0.55;
+		--wave-max: 1.08;
+	}
+	.hero-wave i:nth-child(7) {
+		height: 44%;
+		animation-delay: 70ms;
+		--wave-min: 0.48;
+		--wave-max: 1.28;
+	}
+	.hero-wave i:nth-child(8) {
+		height: 68%;
+		animation-delay: 160ms;
+		--wave-min: 0.52;
+		--wave-max: 1.18;
+	}
+	.hero-wave i:nth-child(9) {
+		height: 30%;
+		animation-delay: 110ms;
+		--wave-min: 0.45;
+		--wave-max: 1.3;
+	}
+
+	@keyframes wave-pulse {
+		0%,
+		100% {
+			transform: scaleY(var(--wave-min, 0.5));
+		}
+		50% {
+			transform: scaleY(var(--wave-max, 1.2));
+		}
+	}
 
 	/* 十字标记：地图/坐标式的小点缀 */
 	.hero-cross {
@@ -597,6 +655,11 @@ const displayColumns = photoColumns.map((column, columnIndex) => {
 			animation: none;
 			opacity: 1;
 			transform: translateY(-50%);
+		}
+
+		.hero-wave i {
+			animation: none;
+			transform: none;
 		}
 
 		.contact-card,

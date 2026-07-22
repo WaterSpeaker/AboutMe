@@ -38,7 +38,7 @@ const episodes = [
 					去小宇宙查看 <span aria-hidden="true">↗</span>
 				</a>
 			</div>
-			<div class="hero-logo" aria-hidden="true"><span></span></div>
+			<div class="hero-logo" aria-hidden="true" data-logo-physics><span></span></div>
 			<div class="hero-note">
 				<p class="eyebrow">In the wilderness</p>
 				<p>在人生的旷野中，你看见了什么</p>
@@ -96,6 +96,20 @@ const episodes = [
 		</section>
 	</main>
 </Base>
+
+<script>
+	import { initAllLogoPhysics } from "../scripts/logo-physics";
+
+	const teardown = initAllLogoPhysics();
+
+	document.addEventListener(
+		"astro:before-swap",
+		() => {
+			teardown();
+		},
+		{ once: true },
+	);
+</script>
 
 <style>
 	.hero {
@@ -182,7 +196,28 @@ const episodes = [
 		width: min(100%, 260px);
 		aspect-ratio: 1;
 		justify-self: center;
-		transition: transform 700ms cubic-bezier(0.4, 0, 0.2, 1);
+		transform-origin: center;
+		will-change: transform;
+		animation: logo-breathe 4.8s ease-in-out infinite;
+		touch-action: none;
+	}
+
+	.hero-logo span {
+		transform-origin: center;
+		will-change: transform;
+		animation: logo-breathe 4.8s ease-in-out infinite 0.6s;
+		pointer-events: none;
+	}
+
+	@keyframes logo-breathe {
+		0%,
+		100% {
+			opacity: 0.7;
+		}
+
+		50% {
+			opacity: 1;
+		}
 	}
 
 	.hero-note {
@@ -340,10 +375,6 @@ const episodes = [
 	}
 
 	@media (hover: hover) {
-		.hero-logo:hover {
-			transform: rotate(90deg);
-		}
-
 		.episode-link {
 			transition: color 160ms ease;
 		}
@@ -363,6 +394,14 @@ const episodes = [
 		.guest-cta:hover {
 			transform: translateY(-1px);
 			opacity: 0.88;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-logo,
+		.hero-logo span {
+			animation: none;
+			opacity: 1;
 		}
 	}
 
