@@ -4,7 +4,7 @@ import { join } from "node:path";
 import Base from "../../layouts/Base.astro";
 import BlogArticle from "../../components/BlogArticle.astro";
 import posts from "../../data/blog-posts.json";
-import { withBaseInHtml } from "../../lib/base";
+import { withBaseInHtml, linkifyHtml } from "../../lib/base";
 
 export function getStaticPaths() {
 	return posts.map((post) => ({
@@ -30,7 +30,7 @@ if (post.lead) {
 	);
 }
 
-bodyHtml = withBaseInHtml(bodyHtml);
+bodyHtml = withBaseInHtml(linkifyHtml(bodyHtml));
 ---
 
 <Base

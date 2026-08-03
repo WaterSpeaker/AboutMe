@@ -427,6 +427,7 @@ export function initTravelMap(
 	const popup = new maplibregl.Popup({
 		closeButton: false,
 		closeOnClick: false,
+		focusAfterOpen: false,
 		maxWidth: "320px",
 		className: "travel-city-popup",
 	});
@@ -621,6 +622,7 @@ export function initTravelMap(
 		const idlePopup = new maplibregl.Popup({
 			closeButton: false,
 			closeOnClick: false,
+			focusAfterOpen: false,
 			maxWidth: "320px",
 			className: "travel-city-popup travel-city-popup--auto",
 		});

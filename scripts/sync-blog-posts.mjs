@@ -50,6 +50,7 @@ const SLUG_BY_TOKEN = {
 	HLxDdtW9uosmulx6Xv9lHLw2gGf: "half-marathon",
 	BtUsdBRJXo3bbZxlq5ElTXtkgFb: "trail-running",
 	KQXJdpTK7oZFH0xXKcIlTHOFgFg: "life-fragments",
+	D5JXd5MbKo75GWxo5AdmVUaJy2e: "vibe-coding",
 };
 
 const LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/;
@@ -263,6 +264,20 @@ function extractImageTokens(xml) {
 	return tokens;
 }
 
+function extractVideoTokens(xml) {
+	const tokens = [];
+	const seen = new Set();
+	for (const match of xml.matchAll(/<source\b([^>]*)\/?>/gi)) {
+		const token = getAttr(match[1], "token") || getAttr(match[1], "src");
+		const mime = getAttr(match[1], "mime");
+		if (token && !seen.has(token) && (!mime || mime.startsWith("video/"))) {
+			seen.add(token);
+			tokens.push(token);
+		}
+	}
+	return tokens;
+}
+
 function compressImageIfNeeded(savedPath, dir, basename) {
 	try {
 		const stats = execFileSync("stat", ["-f%z", savedPath], { encoding: "utf8" }).trim();
@@ -288,7 +303,7 @@ function compressImageIfNeeded(savedPath, dir, basename) {
 	}
 }
 
-function downloadMedia(fileToken, outputDir, basename) {
+function downloadMedia(fileToken, outputDir, basename, { compress = true } = {}) {
 	mkdirSync(outputDir, { recursive: true });
 	const relativeBase = relative(ROOT, join(outputDir, basename));
 	const result = runLark([
@@ -308,6 +323,8 @@ function downloadMedia(fileToken, outputDir, basename) {
 
 	const saved = result.data?.saved_path;
 	if (!saved) throw new Error("media download returned no path");
+	if (!compress) return saved;
+	if (!/\.(png|jpe?g|webp|gif|heic)$/i.test(saved)) return saved;
 	return compressImageIfNeeded(saved, outputDir, basename);
 }
 
@@ -322,6 +339,8 @@ function extractDescriptionFromXml(xml, title) {
 	for (const line of paragraphs) {
 		if (title && line === title) continue;
 		if (line.length < 12) continue;
+		if (/^地址[:：]/u.test(line)) continue;
+		if (/^https?:\/\//i.test(line)) continue;
 		return line.length > 120 ? `${line.slice(0, 118)}…` : line;
 	}
 	return "";
@@ -336,20 +355,92 @@ function extractLead(xml) {
 	return decodeEntities(match[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim());
 }
 
+function renderCiteLink(attrs, innerText) {
+	const title = getAttr(attrs, "title") || innerText || "文档";
+	const docId =
+		getAttr(attrs, "doc-id") ||
+		getAttr(attrs, "token") ||
+		getAttr(attrs, "file-token");
+	const fileType = (getAttr(attrs, "file-type") || "docx").toLowerCase();
+
+	if (!docId) return escapeHtml(title);
+
+	const path =
+		fileType === "wiki"
+			? "wiki"
+			: fileType === "docx" || fileType === "doc"
+				? "docx"
+				: fileType === "sheet" || fileType === "sheets"
+					? "sheets"
+					: fileType === "bitable" || fileType === "base"
+						? "base"
+						: "docx";
+
+	const href = `https://bytedance.larkoffice.com/${path}/${docId}`;
+	return `<a href="${escapeHtml(href)}" target="_blank" rel="noreferrer noopener">${escapeHtml(title)}</a>`;
+}
+
+function linkifyText(text) {
+	return text.replace(/https?:\/\/[^\s<>"'，。、！？；：）\]\}>]+/g, (raw) => {
+		let url = raw;
+		let trailing = "";
+		while (/[),.;:!?]$/.test(url)) {
+			trailing = `${url.slice(-1)}${trailing}`;
+			url = url.slice(0, -1);
+		}
+		if (!url) return raw;
+		return `<a href="${url}" target="_blank" rel="noreferrer noopener">${url}</a>${trailing}`;
+	});
+}
+
+function linkifyHtml(html) {
+	let result = "";
+	let index = 0;
+
+	while (index < html.length) {
+		const rest = html.slice(index);
+		const anchorOpen = rest.match(/^<a\b[^>]*>/i);
+		if (anchorOpen) {
+			const closeAt = html.toLowerCase().indexOf("</a>", index);
+			if (closeAt === -1) {
+				result += html.slice(index);
+				break;
+			}
+			result += html.slice(index, closeAt + 4);
+			index = closeAt + 4;
+			continue;
+		}
+
+		if (html[index] === "<") {
+			const end = html.indexOf(">", index);
+			if (end === -1) {
+				result += html.slice(index);
+				break;
+			}
+			result += html.slice(index, end + 1);
+			index = end + 1;
+			continue;
+		}
+
+		let nextTag = html.indexOf("<", index);
+		if (nextTag === -1) nextTag = html.length;
+		result += linkifyText(html.slice(index, nextTag));
+		index = nextTag;
+	}
+
+	return result;
+}
+
 function transformDocXml(xml, imageMap) {
 	let html = xml;
 
 	html = html.replace(/<title[^>]*>[\s\S]*?<\/title>/gi, "");
 
-	// Self-closing / paired cite → readable title text
-	html = html.replace(/<cite\b([^>]*)\/>/gi, (_, attrs) => {
-		const citeTitle = getAttr(attrs, "title");
-		return citeTitle ? escapeHtml(citeTitle) : "";
-	});
+	// Self-closing / paired cite → clickable Feishu doc links
+	html = html.replace(/<cite\b([^>]*)\/>/gi, (_, attrs) => renderCiteLink(attrs, ""));
 	html = html.replace(/<cite\b([^>]*)>([\s\S]*?)<\/cite>/gi, (_, attrs, inner) => {
-		const citeTitle = getAttr(attrs, "title");
 		const text = decodeEntities(inner.replace(/<[^>]+>/g, "")).trim();
-		return escapeHtml(citeTitle || text);
+		return renderCiteLink(attrs, text);
 	});
 
 	html = html.replace(/<img\b([^>]*)\/?>/gi, (_, attrs) => {
@@ -363,6 +454,17 @@ function transformDocXml(xml, imageMap) {
 			: "";
 		return `<figure class="media"><img src="${local}" alt="${escapeHtml(alt)}" loading="lazy" />${cap}</figure>`;
 	});
+
+	// Feishu video blocks: <figure ...><source token="..." mime="video/..." /></figure>
+	html = html.replace(
+		/<figure\b([^>]*)>\s*<source\b([^>]*)\/?>\s*<\/figure>/gi,
+		(_, _figureAttrs, sourceAttrs) => {
+			const token = getAttr(sourceAttrs, "token") || getAttr(sourceAttrs, "src");
+			const local = imageMap[token];
+			if (!local) return "";
+			return `<figure class="media media-video"><video controls playsinline preload="metadata" src="${local}"></video></figure>`;
+		},
+	);
 
 	html = html.replace(/<grid\b[^>]*>/gi, '<div class="media-row">');
 	html = html.replace(/<\/grid>/gi, "</div>");
@@ -387,7 +489,7 @@ function transformDocXml(xml, imageMap) {
 	// Drop leftover unknown wrappers that might leak
 	html = html.replace(/<\/?(?:sheet|bitable|synced_reference|whiteboard)\b[^>]*\/?>/gi, "");
 
-	return html.trim();
+	return linkifyHtml(html.trim());
 }
 
 function syncArticleBody(slug, url) {
@@ -404,6 +506,7 @@ function syncArticleBody(slug, url) {
 	mkdirSync(assetDir, { recursive: true });
 
 	const tokens = extractImageTokens(xml);
+	const videoTokens = extractVideoTokens(xml);
 	const imageMap = {};
 
 	tokens.forEach((fileToken, index) => {
@@ -416,6 +519,45 @@ function syncArticleBody(slug, url) {
 			sleep(150);
 		} catch (error) {
 			console.warn(`    image ${basename} failed: ${error.message}`);
+		}
+	});
+
+	videoTokens.forEach((fileToken, index) => {
+		const basename = `video${videoTokens.length > 1 ? `-${String(index + 1).padStart(2, "0")}` : ""}`;
+		try {
+			console.log(`    video ${index + 1}/${videoTokens.length}`);
+			const saved = downloadMedia(fileToken, assetDir, basename, { compress: false });
+			let finalPath = saved;
+			// Prefer a browser-friendly mp4 when source is QuickTime.
+			if (/\.mov$/i.test(saved)) {
+				const mp4Path = join(assetDir, `${basename}.mp4`);
+				try {
+					execFileSync(
+						"avconvert",
+						[
+							"--source",
+							saved,
+							"--preset",
+							"Preset960x540",
+							"--output",
+							mp4Path,
+							"--replace",
+						],
+						{ stdio: "ignore" },
+					);
+					if (existsSync(mp4Path)) {
+						rmSync(saved, { force: true });
+						finalPath = mp4Path;
+					}
+				} catch {
+					finalPath = saved;
+				}
+			}
+			const fileName = finalPath.split(/[/\\]/).pop();
+			imageMap[fileToken] = `/blog/${slug}/${fileName}`;
+			sleep(150);
+		} catch (error) {
+			console.warn(`    video ${index + 1} failed: ${error.message}`);
 		}
 	});
 

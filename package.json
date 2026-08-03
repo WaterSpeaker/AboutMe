@@ -11,6 +11,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "sync:travel": "node scripts/sync-travel-cities.mjs",
+    "sync:travel-recs": "node scripts/sync-travel-recommendations.mjs",
     "sync:photos": "node scripts/sync-photos.mjs",
     "sync:blog": "node scripts/sync-blog-posts.mjs"
   },
