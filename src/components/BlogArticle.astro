@@ -255,6 +255,69 @@ const blogHref = withBase("/blog/");
 		color: var(--color-charcoal);
 	}
 
+	:global(.article-body table) {
+		width: 100%;
+		margin: 0 0 var(--spacing-32);
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed;
+		overflow: hidden;
+		border: 1px solid var(--color-ash);
+		border-radius: var(--radius-card);
+		background: var(--color-pure-white);
+		font-size: 15px;
+		line-height: 1.65;
+	}
+
+	:global(.article-body thead th),
+	:global(.article-body tbody td) {
+		padding: 12px 14px;
+		border-right: 1px solid var(--color-ash);
+		border-bottom: 1px solid var(--color-ash);
+		vertical-align: top;
+		text-align: left;
+		word-break: break-word;
+	}
+
+	:global(.article-body thead th:last-child),
+	:global(.article-body tbody td:last-child) {
+		border-right: 0;
+	}
+
+	:global(.article-body tbody tr:last-child td) {
+		border-bottom: 0;
+	}
+
+	:global(.article-body thead th) {
+		background: #f3f3f3;
+		color: var(--color-obsidian);
+		font-family: var(--font-geist-sans);
+		font-size: 14px;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+	}
+
+	:global(.article-body tbody td:first-child) {
+		width: 18%;
+		background: #f7f7f7;
+		color: var(--color-obsidian);
+		font-weight: 600;
+		white-space: nowrap;
+	}
+
+	:global(.article-body table p) {
+		margin: 0;
+	}
+
+	:global(.article-body table td p + p),
+	:global(.article-body table th p + p) {
+		margin-top: 6px;
+		color: var(--color-stone);
+		font-size: 13px;
+		line-height: 1.55;
+		font-weight: 400;
+	}
+
 	:global(.article-body .media-row) {
 		display: flex;
 		flex-wrap: wrap;
@@ -459,6 +522,16 @@ const blogHref = withBase("/blog/");
 	@media (max-width: 720px) {
 		.article-hero {
 			padding-block: 48px 32px;
+		}
+
+		:global(.article-body table) {
+			display: block;
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		:global(.article-body tbody td:first-child) {
+			white-space: normal;
 		}
 
 		:global(.article-body .media-row) {

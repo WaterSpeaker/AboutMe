@@ -51,6 +51,15 @@ const SLUG_BY_TOKEN = {
 	BtUsdBRJXo3bbZxlq5ElTXtkgFb: "trail-running",
 	KQXJdpTK7oZFH0xXKcIlTHOFgFg: "life-fragments",
 	D5JXd5MbKo75GWxo5AdmVUaJy2e: "vibe-coding",
+	DiVAdTeofoWjxVxciZOmTEiryGc: "vibe-coding-asset-plan",
+};
+
+/** Manual cover overrides (kept across sync; not wiped with article media). */
+const COVER_BY_SLUG = {
+	"vibe-coding-asset-plan": {
+		cover: "/blog/vibe-coding-asset-plan/cover.jpg",
+		coverAlt: "资产配置看板截图：净资产结构与金融资产分布",
+	},
 };
 
 const LINK_RE = /\[([^\]]+)\]\(([^)]+)\)/;
@@ -500,10 +509,23 @@ function syncArticleBody(slug, url) {
 
 	const xml = fetched.content;
 	const assetDir = join(ASSETS_ROOT, slug);
+	const preservedCovers = [];
 	if (existsSync(assetDir)) {
+		for (const name of readdirSync(assetDir)) {
+			if (/^cover\./i.test(name)) {
+				const from = join(assetDir, name);
+				const tmp = join("/tmp", `blog-cover-${slug}-${name}`);
+				execFileSync("cp", [from, tmp]);
+				preservedCovers.push({ name, tmp });
+			}
+		}
 		rmSync(assetDir, { recursive: true, force: true });
 	}
 	mkdirSync(assetDir, { recursive: true });
+	for (const item of preservedCovers) {
+		execFileSync("cp", [item.tmp, join(assetDir, item.name)]);
+		rmSync(item.tmp, { force: true });
+	}
 
 	const tokens = extractImageTokens(xml);
 	const videoTokens = extractVideoTokens(xml);
@@ -660,6 +682,12 @@ async function main() {
 
 		if (slug === "kilimanjaro" && cover) {
 			coverAlt = "乞力马扎罗山顶的碟状云";
+		}
+
+		const coverOverride = COVER_BY_SLUG[slug];
+		if (coverOverride) {
+			cover = coverOverride.cover;
+			coverAlt = coverOverride.coverAlt || coverAlt;
 		}
 
 		posts.push({
