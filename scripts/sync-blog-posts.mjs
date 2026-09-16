@@ -52,6 +52,7 @@ const SLUG_BY_TOKEN = {
 	KQXJdpTK7oZFH0xXKcIlTHOFgFg: "life-fragments",
 	D5JXd5MbKo75GWxo5AdmVUaJy2e: "vibe-coding",
 	DiVAdTeofoWjxVxciZOmTEiryGc: "vibe-coding-asset-plan",
+	Pl5Ydb9c4owWjzx5QAgm3UwBykb: "ai-passport-teleprompter",
 };
 
 /** Manual cover overrides (kept across sync; not wiped with article media). */
@@ -59,6 +60,10 @@ const COVER_BY_SLUG = {
 	"vibe-coding-asset-plan": {
 		cover: "/blog/vibe-coding-asset-plan/cover.jpg",
 		coverAlt: "资产配置看板截图：净资产结构与金融资产分布",
+	},
+	"ai-passport-teleprompter": {
+		cover: "/blog/ai-passport-teleprompter/cover.jpg",
+		coverAlt: "TRAE Q&A Recorder 演讲提词器设备",
 	},
 };
 
