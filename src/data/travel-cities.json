@@ -1042,5 +1042,23 @@
 		"lat": 27.6694258,
 		"description": "",
 		"attachmentUrl": "/assets/travel/recvpqEb2SqD7G.png"
+	},
+	{
+		"id": "recvpqGpFjsKI2",
+		"city": "",
+		"country": "Peru",
+		"lng": -75.0458515,
+		"lat": -6.8699697,
+		"description": "在马丘比丘试图抱羊驼未遂 & 在亚马逊雨林抱到了树懒",
+		"attachmentUrl": "/assets/travel/recvpqGpFjsKI2.png"
+	},
+	{
+		"id": "recvxT7UxF9Bcp",
+		"city": "",
+		"country": "Chile",
+		"lng": -71.3187697,
+		"lat": -31.7613365,
+		"description": "一个水果如果看起来不是那么难以运输，但你之前一直没见过的话，那么它大概率就是不好吃的",
+		"attachmentUrl": "/assets/travel/recvxT7UxF9Bcp.jpg"
 	}
 ]
