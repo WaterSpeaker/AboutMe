@@ -11,12 +11,14 @@
  *
  * Usage:
  *   npm run sync:blog
+ *   BLOG_SYNC_TOKEN=<docx token> npm run sync:blog
  */
 
 import { execFileSync } from "node:child_process";
 import {
 	existsSync,
 	mkdirSync,
+	readFileSync,
 	readdirSync,
 	rmSync,
 	writeFileSync,
@@ -53,6 +55,7 @@ const SLUG_BY_TOKEN = {
 	D5JXd5MbKo75GWxo5AdmVUaJy2e: "vibe-coding",
 	DiVAdTeofoWjxVxciZOmTEiryGc: "vibe-coding-asset-plan",
 	Pl5Ydb9c4owWjzx5QAgm3UwBykb: "ai-passport-teleprompter",
+	Q62cdF3CPo0Dc0xIrNtmIbfkyyA: "ai-self-exploration",
 };
 
 /** Manual cover overrides (kept across sync; not wiped with article media). */
@@ -320,16 +323,30 @@ function compressImageIfNeeded(savedPath, dir, basename) {
 function downloadMedia(fileToken, outputDir, basename, { compress = true } = {}) {
 	mkdirSync(outputDir, { recursive: true });
 	const relativeBase = relative(ROOT, join(outputDir, basename));
-	const result = runLark([
+	const output = `./${relativeBase}`;
+	let result = runLark([
 		"docs",
 		"+media-download",
 		"--token",
 		fileToken,
 		"--output",
-		`./${relativeBase}`,
+		output,
 		"--as",
 		"user",
 	]);
+
+	if (!result.ok) {
+		result = runLark([
+			"docs",
+			"+media-preview",
+			"--token",
+			fileToken,
+			"--output",
+			output,
+			"--as",
+			"user",
+		]);
+	}
 
 	if (!result.ok) {
 		throw new Error(result.error?.message ?? "media download failed");
@@ -362,11 +379,16 @@ function extractDescriptionFromXml(xml, title) {
 
 function extractLead(xml) {
 	const withoutTitle = xml.replace(/<title[^>]*>[\s\S]*?<\/title>/i, "").trim();
-	const match = withoutTitle.match(
-		/^<blockquote[^>]*>\s*<p[^>]*>([\s\S]*?)<\/p>\s*<\/blockquote>/i,
-	);
+	const match = withoutTitle.match(/^<blockquote[^>]*>([\s\S]*?)<\/blockquote>/i);
 	if (!match) return "";
-	return decodeEntities(match[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim());
+	const paragraphs = [...match[1].matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)]
+		.map((item) =>
+			decodeEntities(item[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim()),
+		)
+		.filter(Boolean);
+	// A multi-paragraph opening stays in the article. A header lead is only a single pull quote.
+	if (paragraphs.length !== 1) return "";
+	return paragraphs[0];
 }
 
 function renderCiteLink(attrs, innerText) {
@@ -480,8 +502,16 @@ function transformDocXml(xml, imageMap) {
 		},
 	);
 
-	html = html.replace(/<grid\b[^>]*>/gi, '<div class="media-row">');
-	html = html.replace(/<\/grid>/gi, "</div>");
+	html = html.replace(/<col\b([^>]*)>/gi, (_, attrs) => {
+		const cleaned = attrs.replace(/\swidth="[^"]*"/gi, "");
+		return `<col${cleaned}>`;
+	});
+
+	html = html.replace(/<grid\b[^>]*>([\s\S]*?)<\/grid>/gi, (_, inner) => {
+		const columns = (inner.match(/<column\b/gi) || []).length;
+		const className = columns >= 4 ? "media-row is-gallery" : "media-row";
+		return `<div class="${className}">${inner}</div>`;
+	});
 
 	html = html.replace(/<column\b([^>]*)>/gi, (_, attrs) => {
 		const ratio = Number.parseFloat(getAttr(attrs, "width-ratio") || "0.5");
@@ -632,7 +662,13 @@ async function main() {
 	const rows = payload.data ?? [];
 	const recordIds = payload.record_id_list ?? [];
 
-	if (existsSync(BODIES_DIR)) {
+	const onlyToken = process.env.BLOG_SYNC_TOKEN || "";
+	const existingPosts =
+		onlyToken && existsSync(OUTPUT_JSON)
+			? JSON.parse(readFileSync(OUTPUT_JSON, "utf8"))
+			: [];
+
+	if (!onlyToken && existsSync(BODIES_DIR)) {
 		rmSync(BODIES_DIR, { recursive: true, force: true });
 	}
 	mkdirSync(BODIES_DIR, { recursive: true });
@@ -653,6 +689,7 @@ async function main() {
 
 		const { title, url } = parsed;
 		const token = extractToken(url);
+		if (onlyToken && token !== onlyToken) continue;
 		const slug = makeSlug(title, token, recordId);
 
 		console.log(`→ ${title}`);
@@ -712,12 +749,16 @@ async function main() {
 		});
 	}
 
-	posts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+	const nextPosts = onlyToken
+		? [...posts, ...existingPosts.filter((post) => post.token !== onlyToken)]
+		: posts;
 
-	writeFileSync(OUTPUT_JSON, `${JSON.stringify(posts, null, "\t")}\n`, "utf8");
-	console.log(`\nSynced ${posts.length} posts → ${OUTPUT_JSON}`);
+	nextPosts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+	writeFileSync(OUTPUT_JSON, `${JSON.stringify(nextPosts, null, "\t")}\n`, "utf8");
+	console.log(`\nSynced ${onlyToken ? posts.length : nextPosts.length} posts → ${OUTPUT_JSON}`);
 	console.log("Order (newest first):");
-	for (const post of posts) {
+	for (const post of nextPosts) {
 		console.log(`  ${post.createdAtIso || "?"}  ${post.title}`);
 	}
 }

@@ -1,5 +1,20 @@
 [
 	{
+		"slug": "ai-self-exploration",
+		"title": "从生理和心理上，如何和 AI 一起探索自我",
+		"description": "曾经用 AI 帮我完成过不少阶段性体能训练目标，包括解锁引体向上、解锁人生第一个半马、爬了乞力马扎罗；",
+		"lead": "",
+		"date": "2026-11",
+		"createdAt": 1793763837,
+		"createdAtIso": "2026-11-04T11:43:57+08:00",
+		"cover": "/blog/ai-self-exploration/01.png",
+		"coverAlt": "从生理和心理上，如何和 AI 一起探索自我",
+		"sourceUrl": "https://bytedance.my.larkoffice.com/docx/Q62cdF3CPo0Dc0xIrNtmIbfkyyA",
+		"recordId": "reczz28VuwtckKtt",
+		"token": "Q62cdF3CPo0Dc0xIrNtmIbfkyyA",
+		"bodyPath": "blog-bodies/ai-self-exploration.html"
+	},
+	{
 		"slug": "ai-passport-teleprompter",
 		"title": "用 AI passport 做了一个演讲提词器",
 		"description": "前段时间 Trae 比较火的一个电子工牌: https://ai-passport.folotoy.cn/guides/getting-started/",
