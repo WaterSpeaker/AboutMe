@@ -16,7 +16,7 @@ export const homeCopy = {
 		factsIntro: "一些关于我的小事",
 		funFacts: [
 			"16 岁就上大学了",
-			"在 5 个国家长期生活过，旅行过二十几个国家",
+			"在 5 个国家长期生活过，旅行过三十几个国家",
 			"政治面貌：民主党派 · 中国民主促进会会员",
 			"能做引体向上和靠墙手倒立",
 		],
@@ -91,7 +91,7 @@ export const homeCopy = {
 		factsIntro: "A few small things about me",
 		funFacts: [
 			"Started university at 16",
-			"Lived long-term in 5 countries, and traveled to more than twenty",
+			"Lived long-term in 5 countries, and traveled to more than thirty",
 			"Political affiliation: member of the China Association for Promoting Democracy",
 			"Can do pull-ups and a wall handstand",
 		],
